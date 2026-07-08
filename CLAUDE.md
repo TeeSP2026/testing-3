@@ -1,6 +1,6 @@
 # testing-3
 
-Membership Management System for tracking members, loyalty points, categories, redemptions, and performance reporting across a team.
+Loyalty membership management system for tracking members, points, transactions, redemptions, and membership categories across a team.
 
 ## ⚠️ READ THIS BEFORE WRITING ANY CODE
 A complete, correct plan for this app is already committed in `/docs`. Do **not** start

@@ -4,66 +4,88 @@
 | Field | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
-| user_id | uuid nullable | owner scope (lock-down sprint) |
+| user_id | uuid nullable | owner scope (lock-down) |
 | name | text | Silver / Gold / Platinum |
-| min_annual_spend | numeric | |
-| max_annual_spend | numeric nullable | null = no upper limit |
+| min_annual_spend | numeric | lower bound |
+| max_annual_spend | numeric nullable | null = no cap |
 | point_multiplier | numeric | e.g. 1, 1.5, 2 |
 | benefits | text | |
-| renewal_period_days | int | default 365 |
+| created_at | timestamptz | |
 
 ## members
 | Field | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
 | user_id | uuid nullable | |
-| member_id | text unique | auto-generated e.g. MBR-0042 |
-| full_name, gender, date_of_birth | text/date | |
-| mobile_number, email_address, address | text | |
+| member_id | text UNIQUE | auto-generated MBR-XXXXX |
+| full_name | text | |
+| gender | text | |
+| date_of_birth | date | |
+| mobile_number | text | |
+| email_address | text | |
+| address | text | |
 | registration_date | date | |
 | category_id | uuid FK → membership_categories | |
-| points_balance | numeric default 0 | source of truth |
-| annual_spend | numeric default 0 | drives category engine |
+| current_points_balance | numeric default 0 | |
+| annual_spend | numeric default 0 | |
 | status | text | Active / Inactive |
-| category_expiry_date | date | |
-| category_assigned_source | text | AI field: source |
-| category_assigned_confidence | numeric | AI field: 0–1 |
-| category_assigned_review_status | text | default 'unreviewed' |
+| created_at | timestamptz | |
 
-## transactions
+## point_transactions
 | Field | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
-| transaction_no | text unique | TXN-YYYYMMDD-NNN |
+| transaction_no | text UNIQUE | TXN-YYYYMMDD-NNN |
 | transaction_date | timestamptz | |
 | member_id | uuid FK → members | |
 | purchase_amount | numeric | |
-| points_earned | numeric | computed: amount × multiplier |
+| points_earned | numeric | computed server-side |
+| multiplier_applied | numeric | snapshot at time of purchase |
+| category_at_time | text | snapshot |
 | remarks | text | |
-| points_earned_source / confidence / review_status | text/numeric/text | AI provenance |
+| user_id | uuid nullable | |
+| created_at | timestamptz | |
+
+## rewards
+| Field | Type | Notes |
+|---|---|---|
+| id | uuid PK | |
+| name | text | |
+| description | text | |
+| points_required | numeric | |
+| minimum_redemption_points | numeric default 100 | enforced in Route Handler |
+| is_active | boolean | |
+| user_id | uuid nullable | |
+| created_at | timestamptz | |
 
 ## redemptions
 | Field | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
-| redemption_id | text unique | RDM-YYYYMMDD-NNN |
+| redemption_id | text UNIQUE | RDM-YYYYMMDD-NNN |
 | redemption_date | timestamptz | |
 | member_id | uuid FK → members | |
-| reward_item | text | |
+| reward_id | uuid FK → rewards | |
 | points_redeemed | numeric | |
-| remaining_balance | numeric | snapshot at time of redemption |
-| approval_status | text | approved / pending / rejected |
-| approved_by | text | |
+| points_balance_after | numeric | snapshot |
+| status | text | Approved / Pending |
+| processed_by | text | staff name |
+| user_id | uuid nullable | |
+| created_at | timestamptz | |
 
 ## audit_logs
 | Field | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
-| actor | text | username or 'system' |
-| action | text | e.g. award_points, redeem_points, edit_member |
-| object_type | text | members / transactions / redemptions |
-| object_id | text | |
-| before_state / after_state | jsonb | |
-| risk_level | text | low / medium / high / critical |
+| action | text | e.g. AWARD_POINTS, REDEEM, EDIT_MEMBER |
+| target_table | text | |
+| target_id | uuid | |
+| performed_by | text | staff name / system |
+| before_state | jsonb | |
+| after_state | jsonb | |
+| ip_address | text | |
+| user_id | uuid nullable | |
+| created_at | timestamptz | |
 
-**RLS:** All tables have permissive v1 policies (select + all = true). Lock-down sprint replaces with `auth.uid() = user_id`.
+## RLS
+All tables: open v1 read + write policies. Lock-down sprint replaces with `auth.uid() = user_id`.

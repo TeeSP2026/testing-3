@@ -6,8 +6,7 @@ create table if not exists membership_categories (
   min_annual_spend numeric not null default 0,
   max_annual_spend numeric,
   point_multiplier numeric not null default 1,
-  benefits text,
-  renewal_period_days int not null default 365
+  benefits text
 );
 
 alter table membership_categories enable row level security;
@@ -17,8 +16,8 @@ drop policy if exists "membership_categories_v1_write" on membership_categories;
 create policy "membership_categories_v1_write" on membership_categories for all using (true) with check (true);
 
 insert into membership_categories (id, name, min_annual_spend, max_annual_spend, point_multiplier, benefits) values
-  ('a1000000-0000-0000-0000-000000000001', 'Silver', 0, 999, 1, 'Basic Membership'),
-  ('a1000000-0000-0000-0000-000000000002', 'Gold', 1000, 4999, 1.5, 'Bonus Points'),
+  ('a1000000-0000-0000-0000-000000000001', 'Silver', 0, 999.99, 1, 'Basic Membership'),
+  ('a1000000-0000-0000-0000-000000000002', 'Gold', 1000, 4999.99, 1.5, 'Bonus Points'),
   ('a1000000-0000-0000-0000-000000000003', 'Platinum', 5000, null, 2, 'Premium Benefits')
 on conflict (id) do nothing;
 
@@ -35,13 +34,9 @@ create table if not exists members (
   address text,
   registration_date date not null default current_date,
   category_id uuid references membership_categories(id),
-  points_balance numeric not null default 0,
+  current_points_balance numeric not null default 0,
   annual_spend numeric not null default 0,
-  status text not null default 'Active',
-  category_expiry_date date,
-  category_assigned_source text,
-  category_assigned_confidence numeric,
-  category_assigned_review_status text default 'unreviewed'
+  status text not null default 'Active'
 );
 
 alter table members enable row level security;
@@ -50,15 +45,15 @@ create policy "members_v1_read" on members for select using (true);
 drop policy if exists "members_v1_write" on members;
 create policy "members_v1_write" on members for all using (true) with check (true);
 
-insert into members (id, member_id, full_name, gender, date_of_birth, mobile_number, email_address, address, registration_date, category_id, points_balance, annual_spend, status, category_expiry_date) values
-  ('b1000000-0000-0000-0000-000000000001', 'MBR-0001', 'Ahmad Faris bin Razali', 'Male', '1988-04-12', '0123456781', 'ahmad.faris@email.com', '12 Jalan Maju, Kuala Lumpur', '2023-01-15', 'a1000000-0000-0000-0000-000000000003', 8450, 6200, 'Active', '2025-01-15'),
-  ('b1000000-0000-0000-0000-000000000002', 'MBR-0002', 'Siti Norzahra binti Hamid', 'Female', '1993-09-22', '0123456782', 'siti.norzahra@email.com', '45 Lorong Damai, Petaling Jaya', '2023-03-08', 'a1000000-0000-0000-0000-000000000002', 3120, 2400, 'Active', '2025-03-08'),
-  ('b1000000-0000-0000-0000-000000000003', 'MBR-0003', 'Rajesh Kumar s/o Muthu', 'Male', '1979-11-05', '0123456783', 'rajesh.kumar@email.com', '8 Taman Indah, Shah Alam', '2023-06-20', 'a1000000-0000-0000-0000-000000000001', 540, 380, 'Active', '2025-06-20'),
-  ('b1000000-0000-0000-0000-000000000004', 'MBR-0004', 'Nurul Aini binti Zulkifli', 'Female', '1995-02-14', '0123456784', 'nurul.aini@email.com', '3 Persiaran Utama, Subang Jaya', '2023-07-11', 'a1000000-0000-0000-0000-000000000002', 1870, 1550, 'Active', '2025-07-11'),
-  ('b1000000-0000-0000-0000-000000000005', 'MBR-0005', 'Lim Wei Xiang', 'Male', '1985-06-30', '0123456785', 'lim.weixiang@email.com', '22 Jalan Kenanga, Cheras', '2022-11-01', 'a1000000-0000-0000-0000-000000000001', 120, 210, 'Inactive', '2024-11-01')
+insert into members (id, member_id, full_name, gender, date_of_birth, mobile_number, email_address, address, registration_date, category_id, current_points_balance, annual_spend, status) values
+  ('b1000000-0000-0000-0000-000000000001', 'MBR-00001', 'Ahmad Faris bin Zakaria', 'Male', '1988-03-15', '0123456789', 'ahmad.faris@email.com', 'No 12, Jalan Melati, Kuala Lumpur', '2024-01-10', 'a1000000-0000-0000-0000-000000000003', 4200, 6800, 'Active'),
+  ('b1000000-0000-0000-0000-000000000002', 'MBR-00002', 'Siti Nurhaliza binti Hassan', 'Female', '1992-07-22', '0187654321', 'siti.nura@email.com', 'Unit 3A, Taman Bunga, Petaling Jaya', '2024-02-14', 'a1000000-0000-0000-0000-000000000002', 1350, 2100, 'Active'),
+  ('b1000000-0000-0000-0000-000000000003', 'MBR-00003', 'Raj Kumar a/l Selvam', 'Male', '1985-11-05', '0112233445', 'rajkumar@email.com', '45 Lorong Damai, Georgetown, Penang', '2024-03-01', 'a1000000-0000-0000-0000-000000000001', 540, 430, 'Active'),
+  ('b1000000-0000-0000-0000-000000000004', 'MBR-00004', 'Lim Wei Ling', 'Female', '1995-05-30', '0199887766', 'weilingLim@email.com', '88 Jalan Kenanga, Johor Bahru', '2024-04-20', 'a1000000-0000-0000-0000-000000000002', 875, 1580, 'Active'),
+  ('b1000000-0000-0000-0000-000000000005', 'MBR-00005', 'Mohd Hafiz bin Nordin', 'Male', '1990-09-18', '0134455667', 'hafiz.nordin@email.com', 'Blok C-12, Residensi Harmoni, Shah Alam', '2024-05-05', 'a1000000-0000-0000-0000-000000000001', 120, 95, 'Inactive')
 on conflict (id) do nothing;
 
-create table if not exists transactions (
+create table if not exists point_transactions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid,
   created_at timestamptz not null default now(),
@@ -67,24 +62,48 @@ create table if not exists transactions (
   member_id uuid not null references members(id),
   purchase_amount numeric not null,
   points_earned numeric not null,
+  multiplier_applied numeric not null default 1,
   remarks text,
-  points_earned_source text,
-  points_earned_confidence numeric,
-  points_earned_review_status text default 'unreviewed'
+  category_at_time text
 );
 
-alter table transactions enable row level security;
-drop policy if exists "transactions_v1_read" on transactions;
-create policy "transactions_v1_read" on transactions for select using (true);
-drop policy if exists "transactions_v1_write" on transactions;
-create policy "transactions_v1_write" on transactions for all using (true) with check (true);
+alter table point_transactions enable row level security;
+drop policy if exists "point_transactions_v1_read" on point_transactions;
+create policy "point_transactions_v1_read" on point_transactions for select using (true);
+drop policy if exists "point_transactions_v1_write" on point_transactions;
+create policy "point_transactions_v1_write" on point_transactions for all using (true) with check (true);
 
-insert into transactions (id, transaction_no, transaction_date, member_id, purchase_amount, points_earned, remarks) values
-  ('c1000000-0000-0000-0000-000000000001', 'TXN-20240101-001', '2024-01-10 10:30:00+08', 'b1000000-0000-0000-0000-000000000001', 1200.00, 2400, 'Platinum multiplier applied'),
-  ('c1000000-0000-0000-0000-000000000002', 'TXN-20240102-002', '2024-01-15 14:20:00+08', 'b1000000-0000-0000-0000-000000000002', 850.00, 1275, 'Gold multiplier applied'),
-  ('c1000000-0000-0000-0000-000000000003', 'TXN-20240103-003', '2024-01-18 09:00:00+08', 'b1000000-0000-0000-0000-000000000003', 380.00, 380, 'Silver rate'),
-  ('c1000000-0000-0000-0000-000000000004', 'TXN-20240104-004', '2024-02-05 16:45:00+08', 'b1000000-0000-0000-0000-000000000001', 600.00, 1200, 'Platinum multiplier applied'),
-  ('c1000000-0000-0000-0000-000000000005', 'TXN-20240105-005', '2024-02-12 11:10:00+08', 'b1000000-0000-0000-0000-000000000004', 450.00, 675, 'Gold multiplier applied')
+insert into point_transactions (id, transaction_no, transaction_date, member_id, purchase_amount, points_earned, multiplier_applied, remarks, category_at_time) values
+  ('c1000000-0000-0000-0000-000000000001', 'TXN-20240610-001', '2024-06-10 10:30:00+08', 'b1000000-0000-0000-0000-000000000001', 500.00, 1000, 2, 'In-store purchase', 'Platinum'),
+  ('c1000000-0000-0000-0000-000000000002', 'TXN-20240612-002', '2024-06-12 14:15:00+08', 'b1000000-0000-0000-0000-000000000002', 300.00, 450, 1.5, 'Online purchase', 'Gold'),
+  ('c1000000-0000-0000-0000-000000000003', 'TXN-20240615-003', '2024-06-15 09:00:00+08', 'b1000000-0000-0000-0000-000000000003', 180.00, 180, 1, 'Walk-in purchase', 'Silver'),
+  ('c1000000-0000-0000-0000-000000000004', 'TXN-20240618-004', '2024-06-18 16:45:00+08', 'b1000000-0000-0000-0000-000000000001', 1200.00, 2400, 2, 'Corporate order', 'Platinum'),
+  ('c1000000-0000-0000-0000-000000000005', 'TXN-20240620-005', '2024-06-20 11:00:00+08', 'b1000000-0000-0000-0000-000000000004', 250.00, 375, 1.5, 'In-store purchase', 'Gold'),
+  ('c1000000-0000-0000-0000-000000000006', 'TXN-20240622-006', '2024-06-22 13:30:00+08', 'b1000000-0000-0000-0000-000000000002', 600.00, 900, 1.5, 'Special promotion', 'Gold')
+on conflict (id) do nothing;
+
+create table if not exists rewards (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid,
+  created_at timestamptz not null default now(),
+  name text not null,
+  description text,
+  points_required numeric not null,
+  minimum_redemption_points numeric not null default 100,
+  is_active boolean not null default true
+);
+
+alter table rewards enable row level security;
+drop policy if exists "rewards_v1_read" on rewards;
+create policy "rewards_v1_read" on rewards for select using (true);
+drop policy if exists "rewards_v1_write" on rewards;
+create policy "rewards_v1_write" on rewards for all using (true) with check (true);
+
+insert into rewards (id, name, description, points_required, minimum_redemption_points, is_active) values
+  ('d1000000-0000-0000-0000-000000000001', 'RM10 Voucher', 'Redeemable in-store or online', 500, 500, true),
+  ('d1000000-0000-0000-0000-000000000002', 'RM50 Voucher', 'Redeemable in-store or online', 2500, 500, true),
+  ('d1000000-0000-0000-0000-000000000003', 'Free Gift Set', 'Exclusive member gift set', 1000, 500, true),
+  ('d1000000-0000-0000-0000-000000000004', 'RM100 Voucher', 'Premium members only', 5000, 500, true)
 on conflict (id) do nothing;
 
 create table if not exists redemptions (
@@ -94,12 +113,11 @@ create table if not exists redemptions (
   redemption_id text unique not null,
   redemption_date timestamptz not null default now(),
   member_id uuid not null references members(id),
-  reward_item text not null,
+  reward_id uuid not null references rewards(id),
   points_redeemed numeric not null,
-  remaining_balance numeric not null,
-  approval_status text not null default 'approved',
-  approved_by text,
-  remarks text
+  points_balance_after numeric not null,
+  status text not null default 'Approved',
+  processed_by text
 );
 
 alter table redemptions enable row level security;
@@ -108,23 +126,22 @@ create policy "redemptions_v1_read" on redemptions for select using (true);
 drop policy if exists "redemptions_v1_write" on redemptions;
 create policy "redemptions_v1_write" on redemptions for all using (true) with check (true);
 
-insert into redemptions (id, redemption_id, redemption_date, member_id, reward_item, points_redeemed, remaining_balance, approval_status) values
-  ('d1000000-0000-0000-0000-000000000001', 'RDM-20240201-001', '2024-02-01 13:00:00+08', 'b1000000-0000-0000-0000-000000000001', 'RM50 Shopping Voucher', 500, 7950, 'approved'),
-  ('d1000000-0000-0000-0000-000000000002', 'RDM-20240210-002', '2024-02-10 15:30:00+08', 'b1000000-0000-0000-0000-000000000002', 'Free Delivery Voucher', 200, 2920, 'approved'),
-  ('d1000000-0000-0000-0000-000000000003', 'RDM-20240215-003', '2024-02-15 10:00:00+08', 'b1000000-0000-0000-0000-000000000004', 'RM20 Discount Coupon', 200, 1670, 'approved')
+insert into redemptions (id, redemption_id, redemption_date, member_id, reward_id, points_redeemed, points_balance_after, status, processed_by) values
+  ('e1000000-0000-0000-0000-000000000001', 'RDM-20240611-001', '2024-06-11 11:00:00+08', 'b1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000002', 2500, 4200, 'Approved', 'Staff: Amirah'),
+  ('e1000000-0000-0000-0000-000000000002', 'RDM-20240619-002', '2024-06-19 15:30:00+08', 'b1000000-0000-0000-0000-000000000002', 'd1000000-0000-0000-0000-000000000001', 500, 1350, 'Approved', 'Staff: Rizwan'),
+  ('e1000000-0000-0000-0000-000000000003', 'RDM-20240621-003', '2024-06-21 10:15:00+08', 'b1000000-0000-0000-0000-000000000004', 'd1000000-0000-0000-0000-000000000003', 1000, 875, 'Approved', 'Staff: Amirah')
 on conflict (id) do nothing;
 
 create table if not exists audit_logs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid,
   created_at timestamptz not null default now(),
-  actor text,
   action text not null,
-  object_type text not null,
-  object_id text,
+  target_table text not null,
+  target_id uuid,
+  performed_by text,
   before_state jsonb,
   after_state jsonb,
-  risk_level text not null default 'low',
   ip_address text
 );
 

@@ -3,32 +3,33 @@
 ## Risk Levels & Actions
 
 ### Low — Auto-execute, log only
-- Award points after transaction insert (compute + write `points_balance`)
-- Suggest membership category based on `annual_spend` threshold
-- Tag transaction with multiplier source
+- Calculate points from purchase amount
+- Assign / update membership category based on spend threshold
+- Generate Member ID (MBR-XXXXX sequence)
+- Generate Transaction No. and Redemption ID
 
-### Medium — Draft shown to staff, one-click approve
-- Upgrade or downgrade member category (system drafts, staff confirms)
-- Flag member as Inactive after N days of no transactions
+### Medium — Show draft, staff confirms before write
+- Award bonus points for a promotion event (draft → staff approves → INSERT)
+- Bulk status update (e.g. mark inactive members after 12 months of no activity)
 
-### High — Always requires explicit approval
-- Process a redemption above 1,000 points (approval_status = pending → staff approves)
-- Reverse / void a transaction
+### High — Requires explicit approval workflow
+- Redemption of rewards above 5,000 points (flag for supervisor sign-off)
+- Manual point adjustment (add or subtract points outside a purchase)
 
-### Critical — Human only, no agent action
-- Permanent deletion of a member record
-- Bulk point adjustment across multiple members
-- Any action with financial/legal consequence
+### Critical — Human only, never automated
+- Delete a member record
+- Reverse a completed redemption / refund points
+- Bulk data export of PII fields
 
 ## Named Tools (v1)
-- `calculate_points(purchase_amount, multiplier)` → integer
-- `update_member_balance(member_id, delta)` → updated balance
-- `log_audit_event(actor, action, object_type, object_id, before, after, risk_level)`
-- `suggest_category(annual_spend)` → category_id
+- `award_points(member_id, purchase_amount)` → calculates, writes, returns new balance
+- `redeem_reward(member_id, reward_id)` → validates, deducts, writes redemption row
+- `update_member_category(member_id)` → re-checks annual_spend, updates category if needed
+- `toggle_member_status(member_id, new_status)` → writes status, logs action
 
 ## Audit Log Fields
-`actor, action, object_type, object_id, before_state (jsonb), after_state (jsonb), risk_level, created_at, ip_address`
+Every tool call writes to `audit_logs`: `action`, `target_table`, `target_id`, `performed_by`, `before_state` (jsonb), `after_state` (jsonb), `created_at`.
 
 ## v1 vs Later
-**v1:** Only low-risk auto-actions (point calculation, balance update) run automatically. All others are manual.
-**Later:** Category upgrade agent with draft UI, churn-risk alert agent.
+**v1:** All four named tools operational, all writes logged.
+**Later:** Bulk-action tools, churn-risk flag, promotional bonus engine.

@@ -1,20 +1,25 @@
 # Security
 
 ## Secret Handling
-- Supabase service-role key is **never** in frontend code or committed to git.
-- Only `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (read-only, RLS-governed) are exposed to the browser.
-- All write operations that require elevated trust run in Next.js API routes using the service role key from `process.env` (server-only).
+- Supabase service-role key: server-side only (Next.js Route Handlers / `SUPABASE_SERVICE_KEY` env var). Never referenced in client code or `NEXT_PUBLIC_` variables.
+- Anon key (`NEXT_PUBLIC_SUPABASE_ANON_KEY`) is safe to expose — RLS is the guard.
 
-## Permission Model (v1 → lock-down)
-- **v1:** Permissive RLS (`using (true)`) — demo-safe, no real user data.
-- **Lock-down sprint:** Replace with `auth.uid() = user_id` owner policies. Add role column to users table; enforce: Admin = full CRUD, Customer Service = members + transactions + redemptions write, Marketing = categories write + read all, Management = read-only on all tables.
+## Permission Model (v1 → Lock-Down)
+- **v1:** Open RLS policies on all tables — demo works without login.
+- **Lock-Down sprint:** Replace with `auth.uid() = user_id` owner policies. Role column in a `staff_users` table gates write vs read-only surfaces.
+- **Role matrix:**
+  | Role | Members | Transactions | Redemptions | Reports | Admin |
+  |---|---|---|---|---|---|
+  | Administrator | R/W | R/W | R/W | R | R/W |
+  | Customer Service | R/W | R/W | R/W | R | — |
+  | Marketing | R | R | R | R | — |
+  | Management | R | R | R | R | — |
 
-## Approved-Tools Rule
-- Agents may only call the four named tools in `AGENTIC_LAYER.md`.
-- No `run_any_sql`, `send_any_request`, or free-form shell execution.
-- Every tool call appends a row to `audit_logs` before returning.
+## Approved Tools Rule
+Only the four named tools in `AGENTIC_LAYER.md` may write to the database from application logic. No raw `run_any` or dynamic SQL construction from user input. All inputs validated and parameterised.
 
 ## Audit Principle
-- Every state-changing action (create, update, delete, point award, redemption) writes an `audit_log` row with `before_state` and `after_state`.
-- Audit rows are insert-only; no update or delete policy is granted on `audit_logs`.
-- Before adding real staff data: run lock-down sprint, confirm RLS policies with `SELECT * FROM pg_policies`, rotate any dev credentials.
+Every state-changing action (create, update, status toggle, points award, redemption) writes a row to `audit_logs` with before/after state. Audit rows are append-only — no DELETE policy on `audit_logs`.
+
+## PII
+Member PII (name, mobile, email, address) is stored in Postgres. No PII is logged to browser console, Vercel logs, or third-party services. Bulk export of PII is a Critical-level human-only action.
