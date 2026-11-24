@@ -1,34 +1,34 @@
 import Image from "next/image";
-import NavLink from "./NavLink";
+import NavLink, { NavIconKey } from "./NavLink";
 import { getCurrentUser } from "@/lib/auth";
 import { signOut } from "../login/actions";
 
-const NAV_GROUPS = [
+const NAV_GROUPS: { label: string; links: { href: string; label: string; c: string; icon: NavIconKey }[] }[] = [
   {
     label: "概览 OVERVIEW",
     links: [
-      { href: "/", label: "Dashboard", c: "#1D5C93" },
-      { href: "/reports", label: "Reports", c: "#0F807B" },
+      { href: "/", label: "Dashboard", c: "#60A5FA", icon: "dashboard" },
+      { href: "/reports", label: "Reports", c: "#22D3EE", icon: "chartpie" },
     ],
   },
   {
     label: "会员 MEMBERS",
     links: [
-      { href: "/members", label: "Members", c: "#0F807B" },
-      { href: "/register-qr", label: "Register QR", c: "#DB6F12" },
-      { href: "/categories", label: "Categories", c: "#1D5C93" },
+      { href: "/members", label: "Members", c: "#2DD4BF", icon: "users" },
+      { href: "/register-qr", label: "Register QR", c: "#FBBF24", icon: "qrcode" },
+      { href: "/categories", label: "Categories", c: "#C084FC", icon: "medal" },
     ],
   },
   {
     label: "交易 TRANSACTIONS",
     links: [
-      { href: "/sales", label: "Sales", c: "#FB923C" },
-      { href: "/redemptions", label: "Redemptions", c: "#F472B6" },
+      { href: "/sales", label: "Sales", c: "#FB923C", icon: "filetext" },
+      { href: "/redemptions", label: "Redemptions", c: "#F472B6", icon: "gift" },
     ],
   },
   {
     label: "积分 REWARDS",
-    links: [{ href: "/rewards", label: "Rewards", c: "#B97E0B" }],
+    links: [{ href: "/rewards", label: "Rewards", c: "#4ADE80", icon: "star" }],
   },
 ];
 
@@ -52,7 +52,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <div key={group.label}>
               <div className="nav-group">{group.label}</div>
               {group.links.map((link) => (
-                <NavLink key={link.href} href={link.href} label={link.label} c={link.c} />
+                <NavLink key={link.href} href={link.href} label={link.label} c={link.c} icon={link.icon} />
               ))}
             </div>
           ))}
