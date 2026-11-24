@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
   // so we don't let them block a deployment.
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
+  async redirects() {
+    return [
+      { source: "/", destination: "/ma-plantation-system.html", permanent: false },
+    ];
+  },
 };
 
 export default nextConfig;
