@@ -4,11 +4,20 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MembershipCategory } from "@/lib/types";
 import { btnPrimary, btnSecondary, label, categoryColor } from "@/lib/styles";
-import { updateCategory, CategoryFormInput } from "./actions";
+import { createCategory, updateCategory, deleteCategory, CategoryFormInput } from "./actions";
 
-export default function CategoriesClient({ initialCategories }: { initialCategories: MembershipCategory[] }) {
+export default function CategoriesClient({
+  initialCategories,
+  isAdmin,
+}: {
+  initialCategories: MembershipCategory[];
+  isAdmin: boolean;
+}) {
   const router = useRouter();
   const [editing, setEditing] = useState<MembershipCategory | null>(null);
+  const [showAdd, setShowAdd] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [reassigning, setReassigning] = useState(false);
   const [reassignResult, setReassignResult] = useState<string | null>(null);
 
@@ -28,6 +37,17 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
     }
   }
 
+  async function handleDelete(id: string) {
+    setDeleteError(null);
+    try {
+      await deleteCategory(id);
+      setDeletingId(null);
+      router.refresh();
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : "Failed to delete category.");
+    }
+  }
+
   return (
     <>
       <div className="page-head">
@@ -36,12 +56,21 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
           <p>Edit thresholds and point multipliers.</p>
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-          <button className={btnSecondary} onClick={handleReassign} disabled={reassigning}>
-            {reassigning ? "Re-assigning…" : "Re-run Category Assignment"}
-          </button>
+          <div className="actions">
+            <button className={btnSecondary} onClick={handleReassign} disabled={reassigning}>
+              {reassigning ? "Re-assigning…" : "Re-run Category Assignment"}
+            </button>
+            {isAdmin && (
+              <button className={btnPrimary} onClick={() => setShowAdd(true)}>
+                + Add Category
+              </button>
+            )}
+          </div>
           {reassignResult && <p className="muted small">{reassignResult}</p>}
         </div>
       </div>
+
+      {deleteError && <div className="err">{deleteError}</div>}
 
       <div className="panel">
         <div className="tbl-wrap">
@@ -68,10 +97,30 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
                   <td className="r">{c.max_annual_spend !== null ? `RM${c.max_annual_spend.toLocaleString()}` : "No cap"}</td>
                   <td className="r">{c.point_multiplier}x</td>
                   <td className="muted">{c.benefits ?? "—"}</td>
-                  <td className="r">
+                  <td className="r nw">
                     <button style={{ all: "unset", color: "var(--blue)", cursor: "pointer" }} onClick={() => setEditing(c)}>
                       Edit
                     </button>
+                    {isAdmin && (
+                      <>
+                        {" "}
+                        {deletingId === c.id ? (
+                          <span className="small">
+                            Confirm?{" "}
+                            <button style={{ all: "unset", color: "var(--red)", cursor: "pointer", fontWeight: 600 }} onClick={() => handleDelete(c.id)}>
+                              Yes
+                            </button>{" "}
+                            <button style={{ all: "unset", color: "var(--muted)", cursor: "pointer" }} onClick={() => setDeletingId(null)}>
+                              No
+                            </button>
+                          </span>
+                        ) : (
+                          <button style={{ all: "unset", color: "var(--red)", cursor: "pointer", marginLeft: 8 }} onClick={() => setDeletingId(c.id)}>
+                            Delete
+                          </button>
+                        )}
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -90,6 +139,16 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
           }}
         />
       )}
+
+      {showAdd && (
+        <CategoryFormModal
+          onClose={() => setShowAdd(false)}
+          onSubmit={async (formInput) => {
+            await createCategory(formInput);
+            router.refresh();
+          }}
+        />
+      )}
     </>
   );
 }
@@ -99,16 +158,16 @@ function CategoryFormModal({
   onClose,
   onSubmit,
 }: {
-  category: MembershipCategory;
+  category?: MembershipCategory;
   onClose: () => void;
   onSubmit: (input: CategoryFormInput) => Promise<void>;
 }) {
   const [form, setForm] = useState<CategoryFormInput>({
-    name: category.name,
-    min_annual_spend: category.min_annual_spend,
-    max_annual_spend: category.max_annual_spend,
-    point_multiplier: category.point_multiplier,
-    benefits: category.benefits ?? "",
+    name: category?.name ?? "",
+    min_annual_spend: category?.min_annual_spend ?? 0,
+    max_annual_spend: category?.max_annual_spend ?? null,
+    point_multiplier: category?.point_multiplier ?? 1,
+    benefits: category?.benefits ?? "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -116,6 +175,10 @@ function CategoryFormModal({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
+    if (!form.name.trim()) {
+      setFormError("Category name is required.");
+      return;
+    }
     setSubmitting(true);
     try {
       await onSubmit(form);
@@ -131,13 +194,17 @@ function CategoryFormModal({
     <div className="overlay">
       <div className="modal">
         <div className="modal-head">
-          <h2>Edit {category.name}</h2>
+          <h2>{category ? `Edit ${category.name}` : "Add Category"}</h2>
           <button onClick={onClose} className="x">
             &times;
           </button>
         </div>
         <form onSubmit={handleSubmit} className="modal-body">
           {formError && <div className="err">{formError}</div>}
+          <div>
+            <label className={label}>Name</label>
+            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          </div>
           <div className="grid2">
             <div>
               <label className={label}>Min Annual Spend (RM)</label>
@@ -183,7 +250,7 @@ function CategoryFormModal({
               Cancel
             </button>
             <button type="submit" className={btnPrimary} disabled={submitting}>
-              {submitting ? "Saving…" : "Save Changes"}
+              {submitting ? "Saving…" : category ? "Save Changes" : "Add Category"}
             </button>
           </div>
         </form>

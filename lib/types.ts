@@ -75,6 +75,15 @@ export interface RedemptionWithReward extends Redemption {
   rewards: Reward | null;
 }
 
+export interface PointTransactionWithMember extends PointTransaction {
+  members: { id: string; full_name: string; member_id: string } | null;
+}
+
+export interface RedemptionWithMemberAndReward extends Redemption {
+  rewards: Reward | null;
+  members: { id: string; full_name: string; member_id: string } | null;
+}
+
 export interface AuditLog {
   id: string;
   action: string;

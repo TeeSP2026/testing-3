@@ -1,5 +1,7 @@
 import Image from "next/image";
 import NavLink from "./NavLink";
+import { getCurrentUser } from "@/lib/auth";
+import { signOut } from "../login/actions";
 
 const NAV_GROUPS = [
   {
@@ -18,12 +20,21 @@ const NAV_GROUPS = [
     ],
   },
   {
+    label: "交易 TRANSACTIONS",
+    links: [
+      { href: "/sales", label: "Sales", c: "#FB923C" },
+      { href: "/redemptions", label: "Redemptions", c: "#F472B6" },
+    ],
+  },
+  {
     label: "积分 REWARDS",
     links: [{ href: "/rewards", label: "Rewards", c: "#B97E0B" }],
   },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser();
+
   return (
     <div className="app">
       <aside className="side">
@@ -47,9 +58,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ))}
         </nav>
         <div className="side-foot">
-          <div className="who">
-            <b>Staff</b>
-            <span className="muted small">v1 · demo</span>
+          <div className="who-row">
+            <div className="who">
+              <b>{user?.fullName ?? user?.email ?? "Staff"}</b>
+              <span className="muted small">{user?.role === "admin" ? "Admin" : "Staff"}</span>
+            </div>
+            <form action={signOut} className="logout">
+              <button type="submit" className="btn btn-ghost btn-sm">
+                登出
+              </button>
+            </form>
           </div>
         </div>
       </aside>
