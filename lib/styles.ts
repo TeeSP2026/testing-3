@@ -23,7 +23,7 @@ export function categoryColor(name: string | undefined | null) {
 }
 
 export function statusColor(status: string) {
-  return status === "Active"
-    ? "bg-green-100 text-green-700"
-    : "bg-neutral-200 text-neutral-600";
+  if (status === "Active") return "bg-green-100 text-green-700";
+  if (status === "Pending") return "bg-amber-100 text-amber-700";
+  return "bg-neutral-200 text-neutral-600";
 }

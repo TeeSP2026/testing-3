@@ -18,11 +18,15 @@ export default function MemberFormModal({
 }) {
   const [form, setForm] = useState<MemberFormInput>({
     full_name: member?.full_name ?? "",
+    nickname: member?.nickname ?? "",
     gender: member?.gender ?? "",
     date_of_birth: member?.date_of_birth ?? "",
     mobile_number: member?.mobile_number ?? "",
     email_address: member?.email_address ?? "",
     address: member?.address ?? "",
+    ic_number: member?.ic_number ?? "",
+    state: member?.state ?? "",
+    town_area: member?.town_area ?? "",
     category_id: member?.category_id ?? categories[0]?.id ?? "",
   });
   const [submitting, setSubmitting] = useState(false);
@@ -112,6 +116,24 @@ export default function MemberFormModal({
               />
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={label}>Nickname</label>
+              <input
+                className={input}
+                value={form.nickname}
+                onChange={(e) => setForm({ ...form, nickname: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className={label}>IC Number</label>
+              <input
+                className={input}
+                value={form.ic_number}
+                onChange={(e) => setForm({ ...form, ic_number: e.target.value })}
+              />
+            </div>
+          </div>
           <div>
             <label className={label}>Address</label>
             <input
@@ -119,6 +141,24 @@ export default function MemberFormModal({
               value={form.address}
               onChange={(e) => setForm({ ...form, address: e.target.value })}
             />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={label}>State</label>
+              <input
+                className={input}
+                value={form.state}
+                onChange={(e) => setForm({ ...form, state: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className={label}>Town / Area</label>
+              <input
+                className={input}
+                value={form.town_area}
+                onChange={(e) => setForm({ ...form, town_area: e.target.value })}
+              />
+            </div>
           </div>
           <div>
             <label className={label}>Membership Category</label>

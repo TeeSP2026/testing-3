@@ -6,11 +6,15 @@ import { writeAuditLog } from "@/lib/audit";
 
 export interface MemberFormInput {
   full_name: string;
+  nickname: string;
   gender: string;
   date_of_birth: string;
   mobile_number: string;
   email_address: string;
   address: string;
+  ic_number: string;
+  state: string;
+  town_area: string;
   category_id: string;
 }
 
@@ -32,12 +36,17 @@ export async function createMember(input: MemberFormInput) {
     .insert({
       member_id: memberId,
       full_name: input.full_name,
+      nickname: input.nickname || null,
       gender: input.gender || null,
       date_of_birth: input.date_of_birth || null,
       mobile_number: input.mobile_number || null,
       email_address: input.email_address || null,
       address: input.address || null,
+      ic_number: input.ic_number || null,
+      state: input.state || null,
+      town_area: input.town_area || null,
       category_id: input.category_id || null,
+      consent: true,
       registration_date: new Date().toISOString().slice(0, 10),
       current_points_balance: 0,
       annual_spend: 0,
@@ -69,11 +78,15 @@ export async function updateMember(id: string, input: MemberFormInput) {
     .from("members")
     .update({
       full_name: input.full_name,
+      nickname: input.nickname || null,
       gender: input.gender || null,
       date_of_birth: input.date_of_birth || null,
       mobile_number: input.mobile_number || null,
       email_address: input.email_address || null,
       address: input.address || null,
+      ic_number: input.ic_number || null,
+      state: input.state || null,
+      town_area: input.town_area || null,
       category_id: input.category_id || null,
     })
     .eq("id", id)

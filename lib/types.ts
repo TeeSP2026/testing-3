@@ -12,16 +12,22 @@ export interface Member {
   id: string;
   member_id: string;
   full_name: string;
+  nickname: string | null;
   gender: string | null;
   date_of_birth: string | null;
   mobile_number: string | null;
   email_address: string | null;
   address: string | null;
+  ic_number: string | null;
+  state: string | null;
+  town_area: string | null;
+  referred_by: string | null;
+  consent: boolean;
   registration_date: string;
   category_id: string | null;
   current_points_balance: number;
   annual_spend: number;
-  status: "Active" | "Inactive";
+  status: "Active" | "Inactive" | "Pending";
   created_at: string;
 }
 

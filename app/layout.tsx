@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "M_A Plantation 永发肥料企业 — Membership System",
+  title: "MA PLANTATION 永發肥料企業 — Membership System",
   description: "Track members, points, transactions, redemptions, and categories",
 };
 
 const NAV_LINKS = [
   { href: "/", label: "Dashboard" },
   { href: "/members", label: "Members" },
+  { href: "/register-qr", label: "Register QR" },
   { href: "/rewards", label: "Rewards" },
   { href: "/categories", label: "Categories" },
   { href: "/reports", label: "Reports" },
@@ -25,7 +27,10 @@ export default function RootLayout({
       <body className="antialiased bg-neutral-50 text-neutral-900 min-h-screen">
         <header className="border-b border-neutral-200 bg-white sticky top-0 z-10">
           <div className="max-w-6xl mx-auto px-6 py-3 flex items-center gap-8">
-            <span className="font-semibold tracking-tight">M_A Plantation 永发肥料企业</span>
+            <span className="flex items-center gap-2 font-semibold tracking-tight">
+              <Image src="/logo.jpg" alt="MA Plantation" width={28} height={28} className="rounded" />
+              MA PLANTATION 永發肥料企業
+            </span>
             <nav className="flex gap-1 text-sm">
               {NAV_LINKS.map((link) => (
                 <Link

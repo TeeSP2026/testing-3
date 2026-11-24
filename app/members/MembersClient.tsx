@@ -4,9 +4,10 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MemberWithCategory, MembershipCategory } from "@/lib/types";
-import { btnPrimary, card, categoryColor, input, statusColor } from "@/lib/styles";
+import { btnPrimary, btnSecondary, card, categoryColor, input, statusColor } from "@/lib/styles";
 import { createMember, toggleMemberStatus, MemberFormInput } from "./actions";
 import MemberFormModal from "./MemberFormModal";
+import ImportCsvModal from "./ImportCsvModal";
 
 export default function MembersClient({
   initialMembers,
@@ -20,6 +21,7 @@ export default function MembersClient({
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [showAdd, setShowAdd] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [pendingToggleId, setPendingToggleId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -58,9 +60,17 @@ export default function MembersClient({
           <h1 className="text-2xl font-semibold tracking-tight">Members</h1>
           <p className="text-sm text-neutral-500">Manage member profiles, categories, and status.</p>
         </div>
-        <button className={btnPrimary} onClick={() => setShowAdd(true)}>
-          + Add Member
-        </button>
+        <div className="flex gap-2">
+          <a href="/api/members/export" className={btnSecondary}>
+            Export CSV
+          </a>
+          <button className={btnSecondary} onClick={() => setShowImport(true)}>
+            Import CSV
+          </button>
+          <button className={btnPrimary} onClick={() => setShowAdd(true)}>
+            + Add Member
+          </button>
+        </div>
       </div>
 
       <input
@@ -153,6 +163,13 @@ export default function MembersClient({
           categories={categories}
           onClose={() => setShowAdd(false)}
           onSubmit={handleAdd}
+        />
+      )}
+
+      {showImport && (
+        <ImportCsvModal
+          onClose={() => setShowImport(false)}
+          onImported={() => router.refresh()}
         />
       )}
     </div>

@@ -40,7 +40,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="text-sm text-neutral-500">M_A Plantation 永发肥料企业 — membership overview.</p>
+        <p className="text-sm text-neutral-500">MA PLANTATION 永發肥料企業 — membership overview.</p>
       </div>
 
       <div className="grid grid-cols-4 gap-4">
