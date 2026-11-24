@@ -3,7 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Loyalty Membership System",
+  title: "M_A Plantation 永发肥料企业 — Membership System",
   description: "Track members, points, transactions, redemptions, and categories",
 };
 
@@ -25,7 +25,7 @@ export default function RootLayout({
       <body className="antialiased bg-neutral-50 text-neutral-900 min-h-screen">
         <header className="border-b border-neutral-200 bg-white sticky top-0 z-10">
           <div className="max-w-6xl mx-auto px-6 py-3 flex items-center gap-8">
-            <span className="font-semibold tracking-tight">Loyalty Membership</span>
+            <span className="font-semibold tracking-tight">M_A Plantation 永发肥料企业</span>
             <nav className="flex gap-1 text-sm">
               {NAV_LINKS.map((link) => (
                 <Link
