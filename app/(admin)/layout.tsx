@@ -2,38 +2,41 @@ import Image from "next/image";
 import NavLink, { NavIconKey } from "./NavLink";
 import { getCurrentUser } from "@/lib/auth";
 import { signOut } from "../login/actions";
+import { getT } from "@/lib/i18n/server";
+import LanguageSwitcher from "@/lib/i18n/LanguageSwitcher";
 
-const NAV_GROUPS: { label: string; links: { href: string; label: string; c: string; icon: NavIconKey }[] }[] = [
+const NAV_GROUPS: { groupKey: string; links: { href: string; key: string; c: string; icon: NavIconKey }[] }[] = [
   {
-    label: "概览 OVERVIEW",
+    groupKey: "nav.overview",
     links: [
-      { href: "/", label: "Dashboard", c: "#60A5FA", icon: "dashboard" },
-      { href: "/reports", label: "Reports", c: "#22D3EE", icon: "chartpie" },
+      { href: "/", key: "nav.dashboard", c: "#60A5FA", icon: "dashboard" },
+      { href: "/reports", key: "nav.reports", c: "#22D3EE", icon: "chartpie" },
     ],
   },
   {
-    label: "会员 MEMBERS",
+    groupKey: "nav.membersGroup",
     links: [
-      { href: "/members", label: "Members", c: "#2DD4BF", icon: "users" },
-      { href: "/register-qr", label: "Register QR", c: "#FBBF24", icon: "qrcode" },
-      { href: "/categories", label: "Categories", c: "#C084FC", icon: "medal" },
+      { href: "/members", key: "nav.members", c: "#2DD4BF", icon: "users" },
+      { href: "/register-qr", key: "nav.registerQr", c: "#FBBF24", icon: "qrcode" },
+      { href: "/categories", key: "nav.categories", c: "#C084FC", icon: "medal" },
     ],
   },
   {
-    label: "交易 TRANSACTIONS",
+    groupKey: "nav.transactionsGroup",
     links: [
-      { href: "/sales", label: "Sales", c: "#FB923C", icon: "filetext" },
-      { href: "/redemptions", label: "Redemptions", c: "#F472B6", icon: "gift" },
+      { href: "/sales", key: "nav.sales", c: "#FB923C", icon: "filetext" },
+      { href: "/redemptions", key: "nav.redemptions", c: "#F472B6", icon: "gift" },
     ],
   },
   {
-    label: "积分 REWARDS",
-    links: [{ href: "/rewards", label: "Rewards", c: "#4ADE80", icon: "star" }],
+    groupKey: "nav.rewardsGroup",
+    links: [{ href: "/rewards", key: "nav.rewards", c: "#4ADE80", icon: "star" }],
   },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
+  const t = await getT();
 
   return (
     <div className="app">
@@ -49,23 +52,24 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
         <nav className="nav">
           {NAV_GROUPS.map((group) => (
-            <div key={group.label}>
-              <div className="nav-group">{group.label}</div>
+            <div key={group.groupKey}>
+              <div className="nav-group">{t(group.groupKey)}</div>
               {group.links.map((link) => (
-                <NavLink key={link.href} href={link.href} label={link.label} c={link.c} icon={link.icon} />
+                <NavLink key={link.href} href={link.href} label={t(link.key)} c={link.c} icon={link.icon} />
               ))}
             </div>
           ))}
         </nav>
         <div className="side-foot">
+          <LanguageSwitcher />
           <div className="who-row">
             <div className="who">
-              <b>{user?.fullName ?? user?.email ?? "Staff"}</b>
-              <span className="muted small">{user?.role === "admin" ? "Admin" : "Staff"}</span>
+              <b>{user?.fullName ?? user?.email ?? t("common.staff")}</b>
+              <span className="muted small">{user?.role === "admin" ? t("common.admin") : t("common.staff")}</span>
             </div>
             <form action={signOut} className="logout">
               <button type="submit" className="btn btn-ghost btn-sm">
-                登出
+                {t("common.logout")}
               </button>
             </form>
           </div>

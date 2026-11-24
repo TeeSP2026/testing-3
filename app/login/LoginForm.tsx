@@ -2,10 +2,12 @@
 
 import { useActionState } from "react";
 import { signIn } from "./actions";
+import { useT } from "@/lib/i18n/context";
 
 const initialState = { error: "" };
 
 export default function LoginForm() {
+  const t = useT();
   const [state, formAction, pending] = useActionState(async (_prev: typeof initialState, formData: FormData) => {
     const result = await signIn(formData);
     return result ?? initialState;
@@ -14,28 +16,20 @@ export default function LoginForm() {
   return (
     <form action={formAction} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <div className="lg-head">
-        <h2>登入 Log Masuk Login</h2>
-        <p>
-          员工 / 管理员登入系统
-          <br />
-          Log masuk untuk staf / admin
-          <br />
-          Staff / admin sign-in
-        </p>
+        <h2>{t("login.title")}</h2>
+        <p>{t("login.subtitle")}</p>
       </div>
       {state?.error && <p className="err">{state.error}</p>}
       <div>
-        <label className="lbl">
-          用户名或邮箱 / Nama pengguna atau emel / Username or Email
-        </label>
+        <label className="lbl">{t("login.usernameLabel")}</label>
         <input name="email" autoComplete="username" required />
       </div>
       <div>
-        <label className="lbl">密码 / Kata laluan / Password</label>
+        <label className="lbl">{t("login.passwordLabel")}</label>
         <input name="password" type="password" autoComplete="current-password" required />
       </div>
       <button type="submit" className="btn lg-btn" disabled={pending} style={{ width: "100%" }}>
-        {pending ? "登入中… / Sedang log masuk… / Logging in…" : "登入 / Log Masuk / Login"}
+        {pending ? t("login.submitting") : t("login.submit")}
       </button>
     </form>
   );

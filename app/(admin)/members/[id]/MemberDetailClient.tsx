@@ -13,6 +13,7 @@ import {
 import { btnPrimary, btnSecondary, categoryColor, label, statusColor } from "@/lib/styles";
 import { updateMember, toggleMemberStatus, MemberFormInput } from "../actions";
 import MemberFormModal from "../MemberFormModal";
+import { useT } from "@/lib/i18n/context";
 
 export default function MemberDetailClient({
   member,
@@ -27,6 +28,7 @@ export default function MemberDetailClient({
   redemptions: RedemptionWithReward[];
   activeRewards: Reward[];
 }) {
+  const t = useT();
   const router = useRouter();
   const [tab, setTab] = useState<"purchases" | "redemptions">("purchases");
   const [showEdit, setShowEdit] = useState(false);
@@ -64,7 +66,7 @@ export default function MemberDetailClient({
     setPurchaseSuccess(null);
     const value = Number(amount);
     if (!Number.isFinite(value) || value <= 0) {
-      setPurchaseError("Enter a purchase amount greater than 0.");
+      setPurchaseError(t("memberDetail.purchaseAmountInvalid"));
       return;
     }
     setPurchaseSubmitting(true);
@@ -75,15 +77,18 @@ export default function MemberDetailClient({
         body: JSON.stringify({ member_id: member.id, purchase_amount: value, remarks }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Failed to log purchase.");
+      if (!res.ok) throw new Error(data.error ?? t("memberDetail.purchaseFailed"));
       setPurchaseSuccess(
-        `${data.points_earned} points added${data.category_upgraded ? " — category upgraded!" : ""}.`,
+        t("memberDetail.purchaseSuccess", {
+          points: data.points_earned,
+          upgrade: data.category_upgraded ? t("memberDetail.categoryUpgraded") : "",
+        }),
       );
       setAmount("");
       setRemarks("");
       router.refresh();
     } catch (err) {
-      setPurchaseError(err instanceof Error ? err.message : "Failed to log purchase.");
+      setPurchaseError(err instanceof Error ? err.message : t("memberDetail.purchaseFailed"));
     } finally {
       setPurchaseSubmitting(false);
     }
@@ -101,11 +106,11 @@ export default function MemberDetailClient({
         body: JSON.stringify({ member_id: member.id, reward_id: selectedRewardId }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Failed to redeem.");
-      setRedeemSuccess(`Redeemed! New balance: ${data.new_balance} pts.`);
+      if (!res.ok) throw new Error(data.error ?? t("memberDetail.redeemFailed"));
+      setRedeemSuccess(t("memberDetail.redeemSuccess", { balance: data.new_balance }));
       router.refresh();
     } catch (err) {
-      setRedeemError(err instanceof Error ? err.message : "Failed to redeem.");
+      setRedeemError(err instanceof Error ? err.message : t("memberDetail.redeemFailed"));
     } finally {
       setRedeemSubmitting(false);
     }
@@ -121,7 +126,7 @@ export default function MemberDetailClient({
   return (
     <>
       <Link href="/members" className="small">
-        &larr; Back to Members
+        {t("memberDetail.back")}
       </Link>
 
       <div className="panel">
@@ -136,54 +141,54 @@ export default function MemberDetailClient({
             <span className="tier" style={{ ["--tc" as string]: categoryColor(member.membership_categories?.name) }}>
               <i /> {member.membership_categories?.name ?? "—"}
             </span>
-            <span className={statusColor(member.status)}>{member.status}</span>
+            <span className={statusColor(member.status)}>{t(`members.status${member.status}`)}</span>
           </div>
         </div>
 
         <div className="md-info">
           {member.mobile_number && (
-            <div><dt>Mobile</dt><dd>{member.mobile_number}</dd></div>
+            <div><dt>{t("memberDetail.mobile")}</dt><dd>{member.mobile_number}</dd></div>
           )}
           {member.email_address && (
-            <div><dt>Email</dt><dd>{member.email_address}</dd></div>
+            <div><dt>{t("memberDetail.email")}</dt><dd>{member.email_address}</dd></div>
           )}
           {member.address && (
-            <div className="md-addr"><dt>Address</dt><dd>{member.address}</dd></div>
+            <div className="md-addr"><dt>{t("memberDetail.address")}</dt><dd>{member.address}</dd></div>
           )}
         </div>
 
         <div className="md-sum">
           <div className="md-box teal">
-            <span>Points Balance</span>
+            <span>{t("memberDetail.pointsBalance")}</span>
             <b>{member.current_points_balance.toLocaleString()}</b>
           </div>
           <div className="md-box blue">
-            <span>Annual Spend</span>
+            <span>{t("memberDetail.annualSpend")}</span>
             <b>RM{member.annual_spend.toLocaleString()}</b>
           </div>
           <div className="md-box">
-            <span>Registered</span>
+            <span>{t("memberDetail.registered")}</span>
             <b>{member.registration_date}</b>
           </div>
         </div>
 
         <div className="actions">
           <button className={btnSecondary} onClick={() => setShowEdit(true)}>
-            Edit
+            {t("memberDetail.edit")}
           </button>
           {pendingToggle ? (
             <span className="small">
-              Confirm?{" "}
+              {t("common.confirm")}{" "}
               <button style={{ all: "unset", color: "var(--red)", cursor: "pointer", fontWeight: 600 }} onClick={handleToggleStatus}>
-                Yes
+                {t("common.yes")}
               </button>{" "}
               <button style={{ all: "unset", color: "var(--muted)", cursor: "pointer" }} onClick={() => setPendingToggle(false)}>
-                No
+                {t("common.no")}
               </button>
             </span>
           ) : (
             <button className={btnSecondary} onClick={() => setPendingToggle(true)}>
-              {member.status === "Active" ? "Deactivate" : "Activate"}
+              {member.status === "Active" ? t("members.deactivate") : t("members.activate")}
             </button>
           )}
         </div>
@@ -191,10 +196,10 @@ export default function MemberDetailClient({
 
       <div className="cols-eq">
         <div className="panel">
-          <h2>Log Purchase</h2>
+          <h2>{t("memberDetail.logPurchase")}</h2>
           <form onSubmit={handleLogPurchase} className="grid2">
             <div>
-              <label className={label}>Purchase Amount (RM)</label>
+              <label className={label}>{t("memberDetail.purchaseAmount")}</label>
               <input
                 type="number"
                 min="0.01"
@@ -204,25 +209,25 @@ export default function MemberDetailClient({
               />
             </div>
             <div>
-              <label className={label}>Remarks</label>
+              <label className={label}>{t("memberDetail.remarks")}</label>
               <input value={remarks} onChange={(e) => setRemarks(e.target.value)} />
             </div>
             {purchaseError && <p className="err">{purchaseError}</p>}
             {purchaseSuccess && <p className="small" style={{ color: "var(--teal)" }}>{purchaseSuccess}</p>}
             <button type="submit" className={btnPrimary} disabled={purchaseSubmitting}>
-              {purchaseSubmitting ? "Logging…" : "Log Purchase"}
+              {purchaseSubmitting ? t("memberDetail.logging") : t("memberDetail.logPurchaseBtn")}
             </button>
           </form>
         </div>
 
         <div className="panel">
-          <h2>Redeem Reward</h2>
+          <h2>{t("memberDetail.redeemReward")}</h2>
           {activeRewards.length === 0 ? (
-            <p className="muted small">No active rewards available.</p>
+            <p className="muted small">{t("memberDetail.noActiveRewards")}</p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div>
-                <label className={label}>Reward</label>
+                <label className={label}>{t("memberDetail.reward")}</label>
                 <select
                   value={selectedRewardId}
                   onChange={(e) => setSelectedRewardId(e.target.value)}
@@ -236,7 +241,7 @@ export default function MemberDetailClient({
               </div>
               {selectedReward && (
                 <p className="small">
-                  Balance after redemption:{" "}
+                  {t("memberDetail.balanceAfter")}{" "}
                   <b style={{ color: balanceAfterRedeem !== null && balanceAfterRedeem < 0 ? "var(--red)" : undefined }}>
                     {balanceAfterRedeem?.toLocaleString()} pts
                   </b>
@@ -245,7 +250,7 @@ export default function MemberDetailClient({
               {redeemError && <p className="err">{redeemError}</p>}
               {redeemSuccess && <p className="small" style={{ color: "var(--teal)" }}>{redeemSuccess}</p>}
               <button className={btnPrimary} onClick={handleRedeem} disabled={redeemSubmitting}>
-                {redeemSubmitting ? "Redeeming…" : "Confirm Redemption"}
+                {redeemSubmitting ? t("memberDetail.redeeming") : t("memberDetail.confirmRedeem")}
               </button>
             </div>
           )}
@@ -255,36 +260,36 @@ export default function MemberDetailClient({
       <div className="panel">
         <div className="seg">
           <button className={tab === "purchases" ? "on" : ""} onClick={() => setTab("purchases")}>
-            Purchase History
+            {t("memberDetail.purchaseHistory")}
           </button>
           <button className={tab === "redemptions" ? "on" : ""} onClick={() => setTab("redemptions")}>
-            Redemption History
+            {t("memberDetail.redemptionHistory")}
           </button>
         </div>
 
         {tab === "purchases" &&
           (transactions.length === 0 ? (
-            <p className="empty">No transactions yet.</p>
+            <p className="empty">{t("memberDetail.noTransactions")}</p>
           ) : (
             <div className="tbl-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Transaction No</th>
-                    <th>Date</th>
-                    <th className="r">Amount (RM)</th>
-                    <th className="r">Points Earned</th>
-                    <th>Remarks</th>
+                    <th>{t("memberDetail.colTransactionNo")}</th>
+                    <th>{t("memberDetail.colDate")}</th>
+                    <th className="r">{t("memberDetail.colAmount")}</th>
+                    <th className="r">{t("memberDetail.colPointsEarned")}</th>
+                    <th>{t("memberDetail.colRemarks")}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.map((t) => (
-                    <tr key={t.id}>
-                      <td className="nw">{t.transaction_no}</td>
-                      <td className="nw">{new Date(t.transaction_date).toLocaleString()}</td>
-                      <td className="r">{Number(t.purchase_amount).toLocaleString()}</td>
-                      <td className="r">{Number(t.points_earned).toLocaleString()}</td>
-                      <td className="muted">{t.remarks ?? "—"}</td>
+                  {transactions.map((tx) => (
+                    <tr key={tx.id}>
+                      <td className="nw">{tx.transaction_no}</td>
+                      <td className="nw">{new Date(tx.transaction_date).toLocaleString()}</td>
+                      <td className="r">{Number(tx.purchase_amount).toLocaleString()}</td>
+                      <td className="r">{Number(tx.points_earned).toLocaleString()}</td>
+                      <td className="muted">{tx.remarks ?? "—"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -294,18 +299,18 @@ export default function MemberDetailClient({
 
         {tab === "redemptions" &&
           (redemptions.length === 0 ? (
-            <p className="empty">No redemptions yet.</p>
+            <p className="empty">{t("memberDetail.noRedemptions")}</p>
           ) : (
             <div className="tbl-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Redemption ID</th>
-                    <th>Date</th>
-                    <th>Reward</th>
-                    <th className="r">Points Redeemed</th>
-                    <th className="r">Balance After</th>
-                    <th>Status</th>
+                    <th>{t("memberDetail.colRedemptionId")}</th>
+                    <th>{t("memberDetail.colDate")}</th>
+                    <th>{t("memberDetail.colReward")}</th>
+                    <th className="r">{t("memberDetail.colPointsRedeemed")}</th>
+                    <th className="r">{t("memberDetail.colBalanceAfter")}</th>
+                    <th>{t("memberDetail.colStatus")}</th>
                   </tr>
                 </thead>
                 <tbody>

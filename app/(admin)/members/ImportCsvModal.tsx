@@ -2,8 +2,10 @@
 
 import { useRef, useState } from "react";
 import { btnPrimary, btnSecondary } from "@/lib/styles";
+import { useT } from "@/lib/i18n/context";
 
 export default function ImportCsvModal({ onClose, onImported }: { onClose: () => void; onImported: () => void }) {
+  const t = useT();
   const fileRef = useRef<HTMLInputElement>(null);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ imported: number; skipped: number; total: number; errors: string[] } | null>(null);
@@ -12,7 +14,7 @@ export default function ImportCsvModal({ onClose, onImported }: { onClose: () =>
   async function handleImport() {
     const file = fileRef.current?.files?.[0];
     if (!file) {
-      setError("Please choose a CSV file.");
+      setError(t("importCsv.chooseFile"));
       return;
     }
     setSubmitting(true);
@@ -25,11 +27,11 @@ export default function ImportCsvModal({ onClose, onImported }: { onClose: () =>
         body: JSON.stringify({ csv }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Import failed.");
+      if (!res.ok) throw new Error(data.error || t("importCsv.failed"));
       setResult(data);
       onImported();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Import failed.");
+      setError(err instanceof Error ? err.message : t("importCsv.failed"));
     } finally {
       setSubmitting(false);
     }
@@ -39,17 +41,15 @@ export default function ImportCsvModal({ onClose, onImported }: { onClose: () =>
     <div className="overlay">
       <div className="modal">
         <div className="modal-head">
-          <h2>Import Members CSV</h2>
+          <h2>{t("importCsv.title")}</h2>
           <button onClick={onClose} className="x">&times;</button>
         </div>
         <div className="modal-body">
-          <p className="muted small">
-            上传从会员报名表单回复表格下载的 CSV（Google Sheet → File → Download → CSV）。
-          </p>
+          <p className="muted small">{t("importCsv.hint")}</p>
           {error && <div className="err">{error}</div>}
           {result && (
             <div className="pill ok" style={{ display: "block", padding: "10px 14px" }}>
-              导入 {result.imported} 位，跳过（重复/缺字段）{result.skipped} 位，共 {result.total} 行。
+              {t("importCsv.result", { imported: result.imported, skipped: result.skipped, total: result.total })}
               {result.errors.length > 0 && (
                 <ul style={{ marginTop: 8, paddingLeft: 20 }}>
                   {result.errors.map((e, i) => <li key={i}>{e}</li>)}
@@ -59,9 +59,9 @@ export default function ImportCsvModal({ onClose, onImported }: { onClose: () =>
           )}
           <input ref={fileRef} type="file" accept=".csv,text/csv" />
           <div className="modal-foot" style={{ padding: 0, border: 0 }}>
-            <button type="button" className={btnSecondary} onClick={onClose}>Close</button>
+            <button type="button" className={btnSecondary} onClick={onClose}>{t("common.close")}</button>
             <button type="button" className={btnPrimary} onClick={handleImport} disabled={submitting}>
-              {submitting ? "Importing…" : "Import"}
+              {submitting ? t("importCsv.importing") : t("importCsv.import")}
             </button>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Reward } from "@/lib/types";
 import { btnPrimary, btnSecondary, input, label } from "@/lib/styles";
 import { RewardFormInput } from "./actions";
+import { useT } from "@/lib/i18n/context";
 
 export default function RewardFormModal({
   reward,
@@ -23,16 +24,17 @@ export default function RewardFormModal({
   });
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const t = useT();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
     if (!form.name.trim()) {
-      setFormError("Reward name is required.");
+      setFormError(t("rewardForm.nameRequired"));
       return;
     }
     if (form.points_required <= 0) {
-      setFormError("Points required must be greater than 0.");
+      setFormError(t("rewardForm.pointsRequiredInvalid"));
       return;
     }
     setSubmitting(true);
@@ -40,7 +42,7 @@ export default function RewardFormModal({
       await onSubmit(form);
       onClose();
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Failed to save reward.");
+      setFormError(err instanceof Error ? err.message : t("rewardForm.saveFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -50,7 +52,7 @@ export default function RewardFormModal({
     <div className="overlay">
       <div className="modal">
         <div className="modal-head">
-          <h2>{reward ? "Edit Reward" : "Add Reward"}</h2>
+          <h2>{reward ? t("rewardForm.editTitle") : t("rewardForm.addTitle")}</h2>
           <button onClick={onClose} className="x">
             &times;
           </button>
@@ -58,11 +60,11 @@ export default function RewardFormModal({
         <form onSubmit={handleSubmit} className="modal-body">
           {formError && <div className="err">{formError}</div>}
           <div>
-            <label className={label}>Name *</label>
+            <label className={label}>{t("rewardForm.name")}</label>
             <input className={input} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
           <div>
-            <label className={label}>Description</label>
+            <label className={label}>{t("rewardForm.description")}</label>
             <input
               className={input}
               value={form.description}
@@ -71,7 +73,7 @@ export default function RewardFormModal({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={label}>Points Required</label>
+              <label className={label}>{t("rewardForm.pointsRequired")}</label>
               <input
                 type="number"
                 min="1"
@@ -81,7 +83,7 @@ export default function RewardFormModal({
               />
             </div>
             <div>
-              <label className={label}>Minimum Redemption Points</label>
+              <label className={label}>{t("rewardForm.minRedemption")}</label>
               <input
                 type="number"
                 min="0"
@@ -97,14 +99,14 @@ export default function RewardFormModal({
               checked={form.is_active}
               onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
             />
-            Active (visible to staff for redemption)
+            {t("rewardForm.activeLabel")}
           </label>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
             <button type="button" className={btnSecondary} onClick={onClose}>
-              Cancel
+              {t("common.cancel")}
             </button>
             <button type="submit" className={btnPrimary} disabled={submitting}>
-              {submitting ? "Saving…" : reward ? "Save Changes" : "Add Reward"}
+              {submitting ? t("common.saving") : reward ? t("common.saveChanges") : t("rewardForm.addTitle")}
             </button>
           </div>
         </form>

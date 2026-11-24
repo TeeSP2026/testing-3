@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { MembershipCategory } from "@/lib/types";
 import { btnPrimary, btnSecondary, label, categoryColor } from "@/lib/styles";
 import { createCategory, updateCategory, deleteCategory, CategoryFormInput } from "./actions";
+import { useT } from "@/lib/i18n/context";
 
 export default function CategoriesClient({
   initialCategories,
@@ -13,6 +14,7 @@ export default function CategoriesClient({
   initialCategories: MembershipCategory[];
   isAdmin: boolean;
 }) {
+  const t = useT();
   const router = useRouter();
   const [editing, setEditing] = useState<MembershipCategory | null>(null);
   const [showAdd, setShowAdd] = useState(false);
@@ -27,11 +29,11 @@ export default function CategoriesClient({
     try {
       const res = await fetch("/api/reassign-categories", { method: "POST" });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Failed to reassign categories.");
-      setReassignResult(`${data.moved} member(s) moved to a new category.`);
+      if (!res.ok) throw new Error(data.error ?? t("categories.reassignFailed"));
+      setReassignResult(t("categories.reassignResult", { moved: data.moved }));
       router.refresh();
     } catch (err) {
-      setReassignResult(err instanceof Error ? err.message : "Failed to reassign categories.");
+      setReassignResult(err instanceof Error ? err.message : t("categories.reassignFailed"));
     } finally {
       setReassigning(false);
     }
@@ -44,7 +46,7 @@ export default function CategoriesClient({
       setDeletingId(null);
       router.refresh();
     } catch (err) {
-      setDeleteError(err instanceof Error ? err.message : "Failed to delete category.");
+      setDeleteError(err instanceof Error ? err.message : t("categories.deleteFailed"));
     }
   }
 
@@ -52,17 +54,17 @@ export default function CategoriesClient({
     <>
       <div className="page-head">
         <div>
-          <h1>Membership Categories</h1>
-          <p>Edit thresholds and point multipliers.</p>
+          <h1>{t("categories.title")}</h1>
+          <p>{t("categories.subtitle")}</p>
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
           <div className="actions">
             <button className={btnSecondary} onClick={handleReassign} disabled={reassigning}>
-              {reassigning ? "Re-assigning…" : "Re-run Category Assignment"}
+              {reassigning ? t("categories.reassigning") : t("categories.reassign")}
             </button>
             {isAdmin && (
               <button className={btnPrimary} onClick={() => setShowAdd(true)}>
-                + Add Category
+                {t("categories.addCategory")}
               </button>
             )}
           </div>
@@ -77,12 +79,12 @@ export default function CategoriesClient({
           <table>
             <thead>
               <tr>
-                <th>Name</th>
-                <th className="r">Min Annual Spend</th>
-                <th className="r">Max Annual Spend</th>
-                <th className="r">Point Multiplier</th>
-                <th>Benefits</th>
-                <th className="r">Actions</th>
+                <th>{t("categories.colName")}</th>
+                <th className="r">{t("categories.colMinSpend")}</th>
+                <th className="r">{t("categories.colMaxSpend")}</th>
+                <th className="r">{t("categories.colMultiplier")}</th>
+                <th>{t("categories.colBenefits")}</th>
+                <th className="r">{t("categories.colActions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -94,29 +96,29 @@ export default function CategoriesClient({
                     </span>
                   </td>
                   <td className="r">RM{c.min_annual_spend.toLocaleString()}</td>
-                  <td className="r">{c.max_annual_spend !== null ? `RM${c.max_annual_spend.toLocaleString()}` : "No cap"}</td>
+                  <td className="r">{c.max_annual_spend !== null ? `RM${c.max_annual_spend.toLocaleString()}` : t("categories.noCap")}</td>
                   <td className="r">{c.point_multiplier}x</td>
                   <td className="muted">{c.benefits ?? "—"}</td>
                   <td className="r nw">
                     <button style={{ all: "unset", color: "var(--blue)", cursor: "pointer" }} onClick={() => setEditing(c)}>
-                      Edit
+                      {t("common.edit")}
                     </button>
                     {isAdmin && (
                       <>
                         {" "}
                         {deletingId === c.id ? (
                           <span className="small">
-                            Confirm?{" "}
+                            {t("common.confirm")}{" "}
                             <button style={{ all: "unset", color: "var(--red)", cursor: "pointer", fontWeight: 600 }} onClick={() => handleDelete(c.id)}>
-                              Yes
+                              {t("common.yes")}
                             </button>{" "}
                             <button style={{ all: "unset", color: "var(--muted)", cursor: "pointer" }} onClick={() => setDeletingId(null)}>
-                              No
+                              {t("common.no")}
                             </button>
                           </span>
                         ) : (
                           <button style={{ all: "unset", color: "var(--red)", cursor: "pointer", marginLeft: 8 }} onClick={() => setDeletingId(c.id)}>
-                            Delete
+                            {t("common.delete")}
                           </button>
                         )}
                       </>
@@ -171,12 +173,13 @@ function CategoryFormModal({
   });
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const t = useT();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
     if (!form.name.trim()) {
-      setFormError("Category name is required.");
+      setFormError(t("categoryForm.nameRequired"));
       return;
     }
     setSubmitting(true);
@@ -184,7 +187,7 @@ function CategoryFormModal({
       await onSubmit(form);
       onClose();
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Failed to save category.");
+      setFormError(err instanceof Error ? err.message : t("categoryForm.saveFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -194,7 +197,7 @@ function CategoryFormModal({
     <div className="overlay">
       <div className="modal">
         <div className="modal-head">
-          <h2>{category ? `Edit ${category.name}` : "Add Category"}</h2>
+          <h2>{category ? t("categoryForm.editTitle", { name: category.name }) : t("categoryForm.addTitle")}</h2>
           <button onClick={onClose} className="x">
             &times;
           </button>
@@ -202,12 +205,12 @@ function CategoryFormModal({
         <form onSubmit={handleSubmit} className="modal-body">
           {formError && <div className="err">{formError}</div>}
           <div>
-            <label className={label}>Name</label>
+            <label className={label}>{t("categoryForm.name")}</label>
             <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
           <div className="grid2">
             <div>
-              <label className={label}>Min Annual Spend (RM)</label>
+              <label className={label}>{t("categoryForm.minSpend")}</label>
               <input
                 type="number"
                 min="0"
@@ -216,11 +219,11 @@ function CategoryFormModal({
               />
             </div>
             <div>
-              <label className={label}>Max Annual Spend (RM)</label>
+              <label className={label}>{t("categoryForm.maxSpend")}</label>
               <input
                 type="number"
                 min="0"
-                placeholder="No cap"
+                placeholder={t("categoryForm.maxSpendPlaceholder")}
                 value={form.max_annual_spend ?? ""}
                 onChange={(e) =>
                   setForm({ ...form, max_annual_spend: e.target.value === "" ? null : Number(e.target.value) })
@@ -229,7 +232,7 @@ function CategoryFormModal({
             </div>
           </div>
           <div>
-            <label className={label}>Point Multiplier</label>
+            <label className={label}>{t("categoryForm.multiplier")}</label>
             <input
               type="number"
               min="0"
@@ -239,7 +242,7 @@ function CategoryFormModal({
             />
           </div>
           <div>
-            <label className={label}>Benefits</label>
+            <label className={label}>{t("categoryForm.benefits")}</label>
             <input
               value={form.benefits}
               onChange={(e) => setForm({ ...form, benefits: e.target.value })}
@@ -247,10 +250,10 @@ function CategoryFormModal({
           </div>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
             <button type="button" className={btnSecondary} onClick={onClose}>
-              Cancel
+              {t("common.cancel")}
             </button>
             <button type="submit" className={btnPrimary} disabled={submitting}>
-              {submitting ? "Saving…" : category ? "Save Changes" : "Add Category"}
+              {submitting ? t("common.saving") : category ? t("common.saveChanges") : t("categoryForm.addTitle")}
             </button>
           </div>
         </form>

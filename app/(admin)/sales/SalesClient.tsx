@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PointTransactionWithMember } from "@/lib/types";
 import { btnPrimary } from "@/lib/styles";
+import { useT } from "@/lib/i18n/context";
 
 type MemberOption = { id: string; member_id: string; full_name: string };
 
@@ -15,6 +16,7 @@ export default function SalesClient({
   initialTransactions: PointTransactionWithMember[];
   members: MemberOption[];
 }) {
+  const t = useT();
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [month, setMonth] = useState("");
@@ -43,33 +45,33 @@ export default function SalesClient({
     <>
       <div className="page-head">
         <div>
-          <h1>销售记录 Sales</h1>
-          <p>All logged purchases across every member.</p>
+          <h1>{t("sales.title")}</h1>
+          <p>{t("sales.subtitle")}</p>
         </div>
         <button className={btnPrimary} onClick={() => setShowLog(true)}>
-          + Log Sale
+          {t("sales.logSale")}
         </button>
       </div>
 
       <div className="kpis" style={{ gridTemplateColumns: "repeat(2,minmax(0,1fr))" }}>
         <div className="kpi orange">
           <span className="v">RM{totalAmount.toLocaleString()}</span>
-          <span className="k">Total Sales (filtered)</span>
+          <span className="k">{t("sales.totalSales")}</span>
         </div>
         <div className="kpi teal">
           <span className="v">{totalPoints.toLocaleString()}</span>
-          <span className="k">Points Earned (filtered)</span>
+          <span className="k">{t("sales.pointsEarned")}</span>
         </div>
       </div>
 
       <div className="filters" style={{ gridTemplateColumns: "2fr 1fr" }}>
         <input
-          placeholder="Search by transaction no, member, remarks…"
+          placeholder={t("sales.searchPlaceholder")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
         <select value={month} onChange={(e) => setMonth(e.target.value)}>
-          <option value="">All months</option>
+          <option value="">{t("sales.allMonths")}</option>
           {months.map((m) => (
             <option key={m} value={m}>
               {m}
@@ -80,18 +82,18 @@ export default function SalesClient({
 
       <div className="panel">
         {filtered.length === 0 ? (
-          <p className="empty">No sales recorded yet.</p>
+          <p className="empty">{t("sales.noSales")}</p>
         ) : (
           <div className="tbl-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Transaction No</th>
-                  <th>Date</th>
-                  <th>Member</th>
-                  <th className="r">Amount (RM)</th>
-                  <th className="r">Points Earned</th>
-                  <th>Remarks</th>
+                  <th>{t("sales.colTransactionNo")}</th>
+                  <th>{t("sales.colDate")}</th>
+                  <th>{t("sales.colMember")}</th>
+                  <th className="r">{t("sales.colAmount")}</th>
+                  <th className="r">{t("sales.colPointsEarned")}</th>
+                  <th>{t("sales.colRemarks")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -140,6 +142,7 @@ function LogSaleModal({
   onClose: () => void;
   onLogged: () => void;
 }) {
+  const t = useT();
   const [memberId, setMemberId] = useState(members[0]?.id ?? "");
   const [amount, setAmount] = useState("");
   const [remarks, setRemarks] = useState("");
@@ -151,11 +154,11 @@ function LogSaleModal({
     setError(null);
     const value = Number(amount);
     if (!memberId) {
-      setError("Please select a member.");
+      setError(t("logSale.selectMember"));
       return;
     }
     if (!Number.isFinite(value) || value <= 0) {
-      setError("Enter a purchase amount greater than 0.");
+      setError(t("logSale.amountInvalid"));
       return;
     }
     setSubmitting(true);
@@ -166,10 +169,10 @@ function LogSaleModal({
         body: JSON.stringify({ member_id: memberId, purchase_amount: value, remarks }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Failed to log sale.");
+      if (!res.ok) throw new Error(data.error ?? t("logSale.failed"));
       onLogged();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to log sale.");
+      setError(err instanceof Error ? err.message : t("logSale.failed"));
     } finally {
       setSubmitting(false);
     }
@@ -179,7 +182,7 @@ function LogSaleModal({
     <div className="overlay">
       <div className="modal">
         <div className="modal-head">
-          <h2>Log Sale</h2>
+          <h2>{t("logSale.title")}</h2>
           <button onClick={onClose} className="x">
             &times;
           </button>
@@ -187,7 +190,7 @@ function LogSaleModal({
         <form onSubmit={handleSubmit} className="modal-body">
           {error && <div className="err">{error}</div>}
           <div>
-            <label className="lbl">Member</label>
+            <label className="lbl">{t("logSale.member")}</label>
             <select value={memberId} onChange={(e) => setMemberId(e.target.value)}>
               {members.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -197,7 +200,7 @@ function LogSaleModal({
             </select>
           </div>
           <div>
-            <label className="lbl">Purchase Amount (RM)</label>
+            <label className="lbl">{t("logSale.amount")}</label>
             <input
               type="number"
               min="0.01"
@@ -207,15 +210,15 @@ function LogSaleModal({
             />
           </div>
           <div>
-            <label className="lbl">Remarks</label>
+            <label className="lbl">{t("logSale.remarks")}</label>
             <input value={remarks} onChange={(e) => setRemarks(e.target.value)} />
           </div>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
             <button type="button" className="btn btn-ghost" onClick={onClose}>
-              Cancel
+              {t("common.cancel")}
             </button>
             <button type="submit" className={btnPrimary} disabled={submitting}>
-              {submitting ? "Logging…" : "Log Sale"}
+              {submitting ? t("logSale.logging") : t("logSale.title")}
             </button>
           </div>
         </form>

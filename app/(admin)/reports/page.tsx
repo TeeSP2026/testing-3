@@ -1,9 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReportsPage() {
   const supabase = await createClient();
+  const t = await getT();
 
   const [{ data: members }, { data: transactions }, { data: redemptions }] = await Promise.all([
     supabase.from("members").select("id, full_name, registration_date, membership_categories(name)"),
@@ -44,16 +46,16 @@ export default async function ReportsPage() {
     <>
       <div className="page-head">
         <div>
-          <h1>Reports</h1>
-          <p>Aggregate views across members, points, and redemptions.</p>
+          <h1>{t("reports.title")}</h1>
+          <p>{t("reports.subtitle")}</p>
         </div>
       </div>
 
       <div className="cols-eq">
         <div className="panel">
-          <h2>Members by Category</h2>
+          <h2>{t("reports.membersByCategory")}</h2>
           {categoryCounts.size === 0 ? (
-            <p className="muted small">No members yet.</p>
+            <p className="muted small">{t("reports.noMembers")}</p>
           ) : (
             <div className="md-list">
               {Array.from(categoryCounts.entries()).map(([name, count]) => (
@@ -67,23 +69,23 @@ export default async function ReportsPage() {
         </div>
 
         <div className="panel">
-          <h2>Points Earned vs Redeemed</h2>
+          <h2>{t("reports.pointsEarnedVsRedeemed")}</h2>
           <div className="kpis" style={{ gridTemplateColumns: "repeat(2,minmax(0,1fr))" }}>
             <div className="kpi blue">
               <span className="v">{totalPointsIssued.toLocaleString()}</span>
-              <span className="k">Total Earned</span>
+              <span className="k">{t("reports.totalEarned")}</span>
             </div>
             <div className="kpi orange">
               <span className="v">{totalPointsRedeemed.toLocaleString()}</span>
-              <span className="k">Total Redeemed</span>
+              <span className="k">{t("reports.totalRedeemed")}</span>
             </div>
           </div>
         </div>
 
         <div className="panel">
-          <h2>Monthly New-Member Registrations</h2>
+          <h2>{t("reports.monthlyRegistrations")}</h2>
           {sortedMonths.length === 0 ? (
-            <p className="muted small">No members yet.</p>
+            <p className="muted small">{t("reports.noMembers")}</p>
           ) : (
             <div className="md-list">
               {sortedMonths.map(([month, count]) => (
@@ -97,9 +99,9 @@ export default async function ReportsPage() {
         </div>
 
         <div className="panel">
-          <h2>Top 10 Redeemers</h2>
+          <h2>{t("reports.topRedeemers")}</h2>
           {topRedeemers.length === 0 ? (
-            <p className="muted small">No redemptions yet.</p>
+            <p className="muted small">{t("reports.noRedemptions")}</p>
           ) : (
             <div className="md-list">
               {topRedeemers.map((r, i) => (

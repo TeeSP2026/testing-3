@@ -2,11 +2,13 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { categoryColor } from "@/lib/styles";
 import { MemberWithCategory } from "@/lib/types";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
+  const t = await getT();
 
   const [
     { count: totalMembers },
@@ -30,18 +32,18 @@ export default async function DashboardPage() {
   const totalPointsRedeemed = (redemptions ?? []).reduce((sum, r) => sum + Number(r.points_redeemed), 0);
 
   const kpis = [
-    { label: "Total Members", value: totalMembers ?? 0, tone: "blue" },
-    { label: "Active Members", value: activeMembers ?? 0, tone: "teal" },
-    { label: "Total Points Issued", value: totalPointsIssued.toLocaleString(), tone: "orange" },
-    { label: "Total Points Redeemed", value: totalPointsRedeemed.toLocaleString(), tone: "teal" },
+    { label: t("dashboard.totalMembers"), value: totalMembers ?? 0, tone: "blue" },
+    { label: t("dashboard.activeMembers"), value: activeMembers ?? 0, tone: "teal" },
+    { label: t("dashboard.totalPointsIssued"), value: totalPointsIssued.toLocaleString(), tone: "orange" },
+    { label: t("dashboard.totalPointsRedeemed"), value: totalPointsRedeemed.toLocaleString(), tone: "teal" },
   ];
 
   return (
     <>
       <div className="page-head">
         <div>
-          <h1>Dashboard</h1>
-          <p>MA PLANTATION 永發肥料企業 — membership overview.</p>
+          <h1>{t("dashboard.title")}</h1>
+          <p>{t("dashboard.subtitle")}</p>
         </div>
       </div>
 
@@ -56,23 +58,23 @@ export default async function DashboardPage() {
 
       <div className="panel">
         <div className="panel-head">
-          <h2>Top 10 Members by Annual Spend</h2>
+          <h2>{t("dashboard.topMembers")}</h2>
           <Link href="/members" className="small">
-            View all members &rarr;
+            {t("dashboard.viewAll")}
           </Link>
         </div>
         {(topMembers ?? []).length === 0 ? (
-          <p className="empty">No members yet — add one.</p>
+          <p className="empty">{t("dashboard.noMembers")}</p>
         ) : (
           <div className="tbl-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Member ID</th>
-                  <th>Name</th>
-                  <th>Category</th>
-                  <th className="r">Annual Spend</th>
-                  <th className="r">Points</th>
+                  <th>{t("dashboard.colMemberId")}</th>
+                  <th>{t("dashboard.colName")}</th>
+                  <th>{t("dashboard.colCategory")}</th>
+                  <th className="r">{t("dashboard.colAnnualSpend")}</th>
+                  <th className="r">{t("dashboard.colPoints")}</th>
                 </tr>
               </thead>
               <tbody>

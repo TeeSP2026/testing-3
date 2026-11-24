@@ -345,3 +345,13 @@ a.btn{text-decoration:none}
 body{min-height:100vh}
 .app{min-height:100vh}
 
+.lang-switch{display:flex;gap:6px;flex-wrap:wrap}
+.lang-switch button{font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.lang-switch button:hover{border-color:var(--teal)}
+.lang-switch button.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.side .lang-switch button{border-color:var(--side-hover);color:var(--side-muted)}
+.side .lang-switch button:hover{border-color:var(--side-active)}
+.side .lang-switch button.on{background:var(--side-active);color:#fff;border-color:var(--side-active)}
+.login-lang{position:absolute;top:18px;right:18px}
+.login-shell{position:relative}
+

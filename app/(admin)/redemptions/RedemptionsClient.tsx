@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { RedemptionWithMemberAndReward, Reward } from "@/lib/types";
 import { btnPrimary } from "@/lib/styles";
+import { useT } from "@/lib/i18n/context";
 
 type MemberOption = { id: string; member_id: string; full_name: string; current_points_balance: number };
 
@@ -17,6 +18,7 @@ export default function RedemptionsClient({
   members: MemberOption[];
   rewards: Reward[];
 }) {
+  const t = useT();
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [showRedeem, setShowRedeem] = useState(false);
@@ -37,47 +39,47 @@ export default function RedemptionsClient({
     <>
       <div className="page-head">
         <div>
-          <h1>兑换记录 Redemptions</h1>
-          <p>All reward redemptions across every member.</p>
+          <h1>{t("redemptions.title")}</h1>
+          <p>{t("redemptions.subtitle")}</p>
         </div>
         <button className={btnPrimary} onClick={() => setShowRedeem(true)}>
-          + Redeem
+          {t("redemptions.redeem")}
         </button>
       </div>
 
       <div className="kpis" style={{ gridTemplateColumns: "repeat(2,minmax(0,1fr))" }}>
         <div className="kpi blue">
           <span className="v">{filtered.length}</span>
-          <span className="k">Redemptions (filtered)</span>
+          <span className="k">{t("redemptions.filteredCount")}</span>
         </div>
         <div className="kpi orange">
           <span className="v">{totalPoints.toLocaleString()}</span>
-          <span className="k">Points Redeemed (filtered)</span>
+          <span className="k">{t("redemptions.pointsRedeemed")}</span>
         </div>
       </div>
 
       <input
         style={{ maxWidth: 360 }}
-        placeholder="Search by redemption ID, member, or reward…"
+        placeholder={t("redemptions.searchPlaceholder")}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
 
       <div className="panel">
         {filtered.length === 0 ? (
-          <p className="empty">No redemptions recorded yet.</p>
+          <p className="empty">{t("redemptions.noRedemptions")}</p>
         ) : (
           <div className="tbl-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Redemption ID</th>
-                  <th>Date</th>
-                  <th>Member</th>
-                  <th>Reward</th>
-                  <th className="r">Points Redeemed</th>
-                  <th className="r">Balance After</th>
-                  <th>Status</th>
+                  <th>{t("redemptions.colRedemptionId")}</th>
+                  <th>{t("redemptions.colDate")}</th>
+                  <th>{t("redemptions.colMember")}</th>
+                  <th>{t("redemptions.colReward")}</th>
+                  <th className="r">{t("redemptions.colPointsRedeemed")}</th>
+                  <th className="r">{t("redemptions.colBalanceAfter")}</th>
+                  <th>{t("redemptions.colStatus")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -132,6 +134,7 @@ function RedeemModal({
   onClose: () => void;
   onRedeemed: () => void;
 }) {
+  const t = useT();
   const [memberId, setMemberId] = useState(members[0]?.id ?? "");
   const [rewardId, setRewardId] = useState(rewards[0]?.id ?? "");
   const [submitting, setSubmitting] = useState(false);
@@ -146,7 +149,7 @@ function RedeemModal({
     e.preventDefault();
     setError(null);
     if (!memberId || !rewardId) {
-      setError("Please select a member and a reward.");
+      setError(t("redeemModal.selectBoth"));
       return;
     }
     setSubmitting(true);
@@ -157,10 +160,10 @@ function RedeemModal({
         body: JSON.stringify({ member_id: memberId, reward_id: rewardId }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Failed to redeem.");
+      if (!res.ok) throw new Error(data.error ?? t("redeemModal.failed"));
       onRedeemed();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to redeem.");
+      setError(err instanceof Error ? err.message : t("redeemModal.failed"));
     } finally {
       setSubmitting(false);
     }
@@ -170,7 +173,7 @@ function RedeemModal({
     <div className="overlay">
       <div className="modal">
         <div className="modal-head">
-          <h2>Redeem Reward</h2>
+          <h2>{t("redeemModal.title")}</h2>
           <button onClick={onClose} className="x">
             &times;
           </button>
@@ -178,11 +181,11 @@ function RedeemModal({
         <form onSubmit={handleSubmit} className="modal-body">
           {error && <div className="err">{error}</div>}
           {rewards.length === 0 ? (
-            <p className="muted small">No active rewards available.</p>
+            <p className="muted small">{t("redeemModal.noActiveRewards")}</p>
           ) : (
             <>
               <div>
-                <label className="lbl">Member</label>
+                <label className="lbl">{t("redeemModal.member")}</label>
                 <select value={memberId} onChange={(e) => setMemberId(e.target.value)}>
                   {members.map((m) => (
                     <option key={m.id} value={m.id}>
@@ -192,7 +195,7 @@ function RedeemModal({
                 </select>
               </div>
               <div>
-                <label className="lbl">Reward</label>
+                <label className="lbl">{t("redeemModal.reward")}</label>
                 <select value={rewardId} onChange={(e) => setRewardId(e.target.value)}>
                   {rewards.map((r) => (
                     <option key={r.id} value={r.id}>
@@ -203,7 +206,7 @@ function RedeemModal({
               </div>
               {balanceAfter !== null && (
                 <p className="small">
-                  Balance after redemption:{" "}
+                  {t("redeemModal.balanceAfter")}{" "}
                   <b style={{ color: balanceAfter < 0 ? "var(--red)" : undefined }}>
                     {balanceAfter.toLocaleString()} pts
                   </b>
@@ -213,10 +216,10 @@ function RedeemModal({
           )}
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
             <button type="button" className="btn btn-ghost" onClick={onClose}>
-              Cancel
+              {t("common.cancel")}
             </button>
             <button type="submit" className={btnPrimary} disabled={submitting || rewards.length === 0}>
-              {submitting ? "Redeeming…" : "Confirm Redemption"}
+              {submitting ? t("redeemModal.redeeming") : t("redeemModal.confirm")}
             </button>
           </div>
         </form>
