@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MembershipCategory } from "@/lib/types";
-import { btnPrimary, btnSecondary, card, input, label } from "@/lib/styles";
+import { btnPrimary, btnSecondary, label, categoryColor } from "@/lib/styles";
 import { updateCategory, CategoryFormInput } from "./actions";
 
 export default function CategoriesClient({ initialCategories }: { initialCategories: MembershipCategory[] }) {
@@ -29,49 +29,55 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <>
+      <div className="page-head">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Membership Categories</h1>
-          <p className="text-sm text-neutral-500">Edit thresholds and point multipliers.</p>
+          <h1>Membership Categories</h1>
+          <p>Edit thresholds and point multipliers.</p>
         </div>
-        <div className="flex flex-col items-end gap-1">
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
           <button className={btnSecondary} onClick={handleReassign} disabled={reassigning}>
             {reassigning ? "Re-assigning…" : "Re-run Category Assignment"}
           </button>
-          {reassignResult && <p className="text-xs text-neutral-500">{reassignResult}</p>}
+          {reassignResult && <p className="muted small">{reassignResult}</p>}
         </div>
       </div>
 
-      <div className={card + " overflow-hidden"}>
-        <table className="w-full text-sm">
-          <thead className="bg-neutral-50 text-neutral-500 text-xs uppercase tracking-wide">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium">Name</th>
-              <th className="text-left px-4 py-3 font-medium">Min Annual Spend</th>
-              <th className="text-left px-4 py-3 font-medium">Max Annual Spend</th>
-              <th className="text-left px-4 py-3 font-medium">Point Multiplier</th>
-              <th className="text-left px-4 py-3 font-medium">Benefits</th>
-              <th className="text-right px-4 py-3 font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-neutral-100">
-            {initialCategories.map((c) => (
-              <tr key={c.id} className="hover:bg-neutral-50">
-                <td className="px-4 py-3 font-medium">{c.name}</td>
-                <td className="px-4 py-3">RM{c.min_annual_spend.toLocaleString()}</td>
-                <td className="px-4 py-3">{c.max_annual_spend !== null ? `RM${c.max_annual_spend.toLocaleString()}` : "No cap"}</td>
-                <td className="px-4 py-3">{c.point_multiplier}x</td>
-                <td className="px-4 py-3 text-neutral-500">{c.benefits ?? "—"}</td>
-                <td className="px-4 py-3 text-right">
-                  <button className="text-xs text-neutral-600 hover:underline" onClick={() => setEditing(c)}>
-                    Edit
-                  </button>
-                </td>
+      <div className="panel">
+        <div className="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th className="r">Min Annual Spend</th>
+                <th className="r">Max Annual Spend</th>
+                <th className="r">Point Multiplier</th>
+                <th>Benefits</th>
+                <th className="r">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {initialCategories.map((c) => (
+                <tr key={c.id}>
+                  <td>
+                    <span className="tier" style={{ ["--tc" as string]: categoryColor(c.name) }}>
+                      <i /> {c.name}
+                    </span>
+                  </td>
+                  <td className="r">RM{c.min_annual_spend.toLocaleString()}</td>
+                  <td className="r">{c.max_annual_spend !== null ? `RM${c.max_annual_spend.toLocaleString()}` : "No cap"}</td>
+                  <td className="r">{c.point_multiplier}x</td>
+                  <td className="muted">{c.benefits ?? "—"}</td>
+                  <td className="r">
+                    <button style={{ all: "unset", color: "var(--blue)", cursor: "pointer" }} onClick={() => setEditing(c)}>
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {editing && (
@@ -84,7 +90,7 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
           }}
         />
       )}
-    </div>
+    </>
   );
 }
 
@@ -122,27 +128,22 @@ function CategoryFormModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-20 p-4">
-      <div className="bg-white rounded-xl shadow-lg max-w-md w-full">
-        <div className="px-6 py-4 border-b border-neutral-200 flex items-center justify-between">
-          <h2 className="font-semibold text-lg">Edit {category.name}</h2>
-          <button onClick={onClose} className="text-neutral-400 hover:text-neutral-700 text-xl leading-none">
+    <div className="overlay">
+      <div className="modal">
+        <div className="modal-head">
+          <h2>Edit {category.name}</h2>
+          <button onClick={onClose} className="x">
             &times;
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {formError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2">
-              {formError}
-            </div>
-          )}
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="modal-body">
+          {formError && <div className="err">{formError}</div>}
+          <div className="grid2">
             <div>
               <label className={label}>Min Annual Spend (RM)</label>
               <input
                 type="number"
                 min="0"
-                className={input}
                 value={form.min_annual_spend}
                 onChange={(e) => setForm({ ...form, min_annual_spend: Number(e.target.value) })}
               />
@@ -152,7 +153,6 @@ function CategoryFormModal({
               <input
                 type="number"
                 min="0"
-                className={input}
                 placeholder="No cap"
                 value={form.max_annual_spend ?? ""}
                 onChange={(e) =>
@@ -167,7 +167,6 @@ function CategoryFormModal({
               type="number"
               min="0"
               step="0.1"
-              className={input}
               value={form.point_multiplier}
               onChange={(e) => setForm({ ...form, point_multiplier: Number(e.target.value) })}
             />
@@ -175,12 +174,11 @@ function CategoryFormModal({
           <div>
             <label className={label}>Benefits</label>
             <input
-              className={input}
               value={form.benefits}
               onChange={(e) => setForm({ ...form, benefits: e.target.value })}
             />
           </div>
-          <div className="flex justify-end gap-2 pt-2">
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
             <button type="button" className={btnSecondary} onClick={onClose}>
               Cancel
             </button>

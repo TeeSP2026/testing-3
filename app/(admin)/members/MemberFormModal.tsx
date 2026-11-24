@@ -51,20 +51,16 @@ export default function MemberFormModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-20 p-4">
-      <div className="bg-white rounded-xl shadow-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div className="px-6 py-4 border-b border-neutral-200 flex items-center justify-between">
-          <h2 className="font-semibold text-lg">{member ? "Edit Member" : "Add Member"}</h2>
-          <button onClick={onClose} className="text-neutral-400 hover:text-neutral-700 text-xl leading-none">
+    <div className="overlay">
+      <div className="modal">
+        <div className="modal-head">
+          <h2>{member ? "Edit Member" : "Add Member"}</h2>
+          <button onClick={onClose} className="x">
             &times;
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {formError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2">
-              {formError}
-            </div>
-          )}
+        <form onSubmit={handleSubmit} className="modal-body">
+          {formError && <div className="err">{formError}</div>}
           <div>
             <label className={label}>Full Name *</label>
             <input
@@ -174,7 +170,7 @@ export default function MemberFormModal({
               ))}
             </select>
           </div>
-          <div className="flex justify-end gap-2 pt-2">
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
             <button type="button" className={btnSecondary} onClick={onClose}>
               Cancel
             </button>

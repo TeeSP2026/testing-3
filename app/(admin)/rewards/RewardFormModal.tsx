@@ -47,20 +47,16 @@ export default function RewardFormModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-20 p-4">
-      <div className="bg-white rounded-xl shadow-lg max-w-md w-full">
-        <div className="px-6 py-4 border-b border-neutral-200 flex items-center justify-between">
-          <h2 className="font-semibold text-lg">{reward ? "Edit Reward" : "Add Reward"}</h2>
-          <button onClick={onClose} className="text-neutral-400 hover:text-neutral-700 text-xl leading-none">
+    <div className="overlay">
+      <div className="modal">
+        <div className="modal-head">
+          <h2>{reward ? "Edit Reward" : "Add Reward"}</h2>
+          <button onClick={onClose} className="x">
             &times;
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {formError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2">
-              {formError}
-            </div>
-          )}
+        <form onSubmit={handleSubmit} className="modal-body">
+          {formError && <div className="err">{formError}</div>}
           <div>
             <label className={label}>Name *</label>
             <input className={input} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
@@ -95,7 +91,7 @@ export default function RewardFormModal({
               />
             </div>
           </div>
-          <label className="flex items-center gap-2 text-sm">
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14 }}>
             <input
               type="checkbox"
               checked={form.is_active}
@@ -103,7 +99,7 @@ export default function RewardFormModal({
             />
             Active (visible to staff for redemption)
           </label>
-          <div className="flex justify-end gap-2 pt-2">
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
             <button type="button" className={btnSecondary} onClick={onClose}>
               Cancel
             </button>

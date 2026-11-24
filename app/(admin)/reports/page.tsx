@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { card } from "@/lib/styles";
 
 export const dynamic = "force-dynamic";
 
@@ -42,75 +41,77 @@ export default async function ReportsPage() {
     .slice(0, 10);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Reports</h1>
-        <p className="text-sm text-neutral-500">Aggregate views across members, points, and redemptions.</p>
+    <>
+      <div className="page-head">
+        <div>
+          <h1>Reports</h1>
+          <p>Aggregate views across members, points, and redemptions.</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
-        <div className={card + " p-6"}>
-          <h2 className="font-semibold mb-4">Members by Category</h2>
+      <div className="cols-eq">
+        <div className="panel">
+          <h2>Members by Category</h2>
           {categoryCounts.size === 0 ? (
-            <p className="text-sm text-neutral-500">No members yet.</p>
+            <p className="muted small">No members yet.</p>
           ) : (
-            <ul className="space-y-2">
+            <div className="md-list">
               {Array.from(categoryCounts.entries()).map(([name, count]) => (
-                <li key={name} className="flex items-center justify-between text-sm">
+                <div key={name} className="md-row">
                   <span>{name}</span>
-                  <span className="font-medium">{count}</span>
-                </li>
+                  <span className="r">{count}</span>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
 
-        <div className={card + " p-6"}>
-          <h2 className="font-semibold mb-4">Points Earned vs Redeemed</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-2xl font-bold">{totalPointsIssued.toLocaleString()}</p>
-              <p className="text-sm text-neutral-500">Total Earned</p>
+        <div className="panel">
+          <h2>Points Earned vs Redeemed</h2>
+          <div className="kpis" style={{ gridTemplateColumns: "repeat(2,minmax(0,1fr))" }}>
+            <div className="kpi blue">
+              <span className="v">{totalPointsIssued.toLocaleString()}</span>
+              <span className="k">Total Earned</span>
             </div>
-            <div>
-              <p className="text-2xl font-bold">{totalPointsRedeemed.toLocaleString()}</p>
-              <p className="text-sm text-neutral-500">Total Redeemed</p>
+            <div className="kpi orange">
+              <span className="v">{totalPointsRedeemed.toLocaleString()}</span>
+              <span className="k">Total Redeemed</span>
             </div>
           </div>
         </div>
 
-        <div className={card + " p-6"}>
-          <h2 className="font-semibold mb-4">Monthly New-Member Registrations</h2>
+        <div className="panel">
+          <h2>Monthly New-Member Registrations</h2>
           {sortedMonths.length === 0 ? (
-            <p className="text-sm text-neutral-500">No members yet.</p>
+            <p className="muted small">No members yet.</p>
           ) : (
-            <ul className="space-y-2">
+            <div className="md-list">
               {sortedMonths.map(([month, count]) => (
-                <li key={month} className="flex items-center justify-between text-sm">
+                <div key={month} className="md-row">
                   <span>{month}</span>
-                  <span className="font-medium">{count}</span>
-                </li>
+                  <span className="r">{count}</span>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
 
-        <div className={card + " p-6"}>
-          <h2 className="font-semibold mb-4">Top 10 Redeemers</h2>
+        <div className="panel">
+          <h2>Top 10 Redeemers</h2>
           {topRedeemers.length === 0 ? (
-            <p className="text-sm text-neutral-500">No redemptions yet.</p>
+            <p className="muted small">No redemptions yet.</p>
           ) : (
-            <ul className="space-y-2">
+            <div className="md-list">
               {topRedeemers.map((r, i) => (
-                <li key={i} className="flex items-center justify-between text-sm">
+                <div key={i} className="md-row">
                   <span>{r.name}</span>
-                  <span className="font-medium">{r.total.toLocaleString()} pts</span>
-                </li>
+                  <span className="r">{r.total.toLocaleString()} pts</span>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }
